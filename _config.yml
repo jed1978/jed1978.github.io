@@ -27,9 +27,9 @@ nav_lists:
       zh-Hant: 關於
     url: /about.html
 
-# paths:
-#   base: /
-#   home: /
+paths:
+  base: /
+  home: https://github.com/jed1978/jed1978.github.io
 #   all:  /all.html
 #   rss:  /feed.xml
 
