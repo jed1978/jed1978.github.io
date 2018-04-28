@@ -2,7 +2,7 @@
 layout: post
 title: 學習敏捷系列 - Daily Scrum
 key: Agile
-tags: Agile Scrum DailyScrum
+tags: [Agile, Scrum, Daily Scrum]
 ---
 
 我參與過很多次的傳統瀑布流專案進度匯報會議，不帶杯咖啡進去真的很容易睡著，還好現在有了智慧型手機可以刷FB…(大誤)。
