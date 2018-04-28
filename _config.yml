@@ -72,7 +72,7 @@ gitalk:
     # - owner
 
 ## Google Analytics ##
-# ga_tracking_id:  #Google analytics id for the site
+ga_tracking_id: UA-118355316-1 #Google analytics id for the site
 
 ## Reading quantity (LeanCloud) ##
 leancloud:
