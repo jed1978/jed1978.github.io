@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh-Hant"><generator uri="https://jekyllrb.com/" version="3.8.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="zh-Hant" /><updated>2018-04-28T21:24:36+08:00</updated><id>http://localhost:4000/</id><title type="html">Jed’s blog</title><subtitle>寫程式是一件快樂的事，期許自己可以一輩子都能享受這種快樂
+</subtitle><author><name>Jed Lin</name></author><entry><title type="html">Upgrade GitLab from 10.3.3 to 10.7.1</title><link href="http://localhost:4000/2018/04/27/GitLab-Upgrade-500-Error.html" rel="alternate" type="text/html" title="Upgrade GitLab from 10.3.3 to 10.7.1" /><published>2018-04-27T00:00:00+08:00</published><updated>2018-04-27T00:00:00+08:00</updated><id>http://localhost:4000/2018/04/27/GitLab-Upgrade-500-Error</id><content type="html" xml:base="http://localhost:4000/2018/04/27/GitLab-Upgrade-500-Error.html">&lt;h1 id=&quot;gitlab-1033-ee-更新-1071-ee的問題&quot;&gt;Gitlab 10.3.3 EE 更新 10.7.1 EE的問題&lt;/h1&gt;
+
+&lt;h2 id=&quot;升版失敗&quot;&gt;升版失敗&lt;/h2&gt;
+
+&lt;p&gt;某同事在某一天星期五上午，提早到了公司，依原先的計畫要&lt;del&gt;宰殺&lt;/del&gt;升級全部團隊共用的Gitlab Server到最新的10.7.1。&lt;/p&gt;
+
+&lt;p&gt;他依照原本設計的SOP進行升級後，如沒有意外的話，這篇文章也就不會出現了…
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;p&gt;通訊群組內通知大家升級完成，期望的美好未來沒有發生，團隊陸續回報了下列問題&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;ssh: connect to host gitlab.xxxx.net port 8022: Connection refused&lt;/li&gt;
+  &lt;li&gt;Internal 500 Error&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;因為事態嚴重，全公司十多個團隊同時發生，所以趕快進行降版復原&lt;/p&gt;
+
+&lt;p&gt;但這不是一個童話故事，惡夢並未在降版後就結束了，這是成人世界殘酷的現實…&lt;/p&gt;
+
+&lt;h2 id=&quot;降版失敗&quot;&gt;降版失敗&lt;/h2&gt;
+
+&lt;p&gt;降版後，回報的問題不見了，但取而代之的是AD驗證失敗&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;
+Could not authenticate you from Ldapmain because &quot;Pg::undefinedcolumn: error: column namespaces.deleted at does not exist line 1: ...s&quot; where (&quot;namespaces&quot;.&quot;name&quot; = 'jxxxx.xxxx' and &quot;namespace... ^ : select 1 as one from &quot;namespaces&quot; where (&quot;namespaces&quot;.&quot;name&quot; = 'jxxxx.xxxx' and &quot;namespaces&quot;.&quot;deleted at&quot; is null and &quot;namespaces&quot;.&quot;id&quot; != xx and &quot;namespaces&quot;.&quot;parent id&quot; is null) limit 1&quot;.
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;對，降版失敗! 雖然同事在升級前有備份完整的設定檔，但還原後確發生了其他的問題，懷疑是Gitlab內部在某一版後變更了DB的schema。 由於狀況愈來愈嚴重，跟執行更新的同事討論後，決定再次升級回10.7.1，讓所有團隊可以先建置要部署到QAT的package。&lt;/p&gt;
+
+&lt;p&gt;開弓沒有回頭路，我們只能嘗試看看能不能找到解決方法。&lt;/p&gt;
+
+&lt;h2 id=&quot;問題排查&quot;&gt;問題排查&lt;/h2&gt;
+
+&lt;p&gt;回到10.7.1後，一開始團隊回報正常，原本以為人品爆發，GitLab恢復正常了，但沒多久開始有人回報這個錯誤&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;
+fatal: The remote end hung up unexpectedly
+error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500 Internal Server Error
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;接下來沒多久，Internal 500 ERROR也跟著出現，嘗試著重啟服務後又正常一陣子，但約20分鐘後這個狀況就會重覆發生。我們開始逐一清查可疑的部份，這段期間就委曲團隊只能用20分鐘，然後重啟服務。&lt;/p&gt;
+
+&lt;p&gt;在檢查了很多部份後，注意到一個錯誤訊息非常可疑&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;
+time=&quot;2018-04-27T07:42:48Z&quot; level=fatal error=&quot;Failed to bind mount /var/opt/gitlab/gitlab-rails/shared/pages on /tmp/gitlab-pages-1524814968737227221/pages. operation not permitted&quot;
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;我查了一下GitLab官方的issue列表，發現在5天前有人在10.7.0回報這個&lt;a href=&quot;https://gitlab.com/gitlab-org/gitlab-pages/issues/129&quot;&gt;issue&lt;/a&gt;，我仔細的讀了整個討論串，確定這個issue在10.7.1並未被修正，也有其他網友提出了workaround，就是把GitLab Page先disabled。&lt;/p&gt;
+
+&lt;p&gt;剛好我們之前在建置GitLab時也沒有用到這個功能，所以趕緊在gitlab.rb將Page關閉，然後重啟服務。&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;
+gitlab_pages['enable'] = false 
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;在重啟服務後，各團隊陸續回報功能已正常，但還是有一個問題回報，就是我們用來跟Jenkins做CI整合的Webhook還是壞的。&lt;/p&gt;
+
+&lt;p&gt;到GitLab的Webhook頁面按下Push測試，依然會出現500 ERROR的錯誤頁面，研判可能不是同一個問題(&lt;code class=&quot;highlighter-rouge&quot;&gt;後續解釋第一個問題時，就會知道為什麼我會判斷不是同一個問題&lt;/code&gt;)，上網google了一下，原來是在10.5.6版時對Outbound Request新增了一個設定，用Admin的權限登入設定後，團隊回報功能正常，終於結束這個GitLab升級事件。&lt;/p&gt;
+
+&lt;h2 id=&quot;問題原因分析&quot;&gt;問題原因分析&lt;/h2&gt;
+
+&lt;p&gt;這次的主要問題是升級後的500 ERROR，雖然source code不用擔心會掉，但還是造成很大的不便。&lt;/p&gt;
+
+&lt;p&gt;根據GitLab的開發人員解釋，這個問題跟Docker有關係，然後我們剛好就是用官方的Omnibus Docker image建置GitLab。&lt;/p&gt;
+
+&lt;p&gt;GitLab有一個Page功能，就像是GitHub的Page一樣，用來建置靜態網站，因為這功能會佔用較多磁碟空間，原本是用in-place的方式在Docker內部調用chroot掛載外部Volume&lt;/p&gt;
+
+&lt;p&gt;在10.7.0改版後，改成用bind mounting的方式來掛載外部Volume，這對privileged container來說是比較方便的，但&lt;strong&gt;同時他們也移掉了舊版的in-place方式&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;問題來了，我們用的官方Omnibus docker image是以Unprivileged 的方式發行，意味著裡面的user不具備外部環境的root權限，所以沒辦法在container內直接使用bind mounting的方式掛載外部的volume，只能用chroot&lt;/p&gt;
+
+&lt;p&gt;但因為我們其實沒有開啟GitLab Page的功能，所以直接在參數內關閉Page，繞過了這個issue&lt;/p&gt;
+
+&lt;p&gt;官方說這應該要變成一個新功能，提供一個設定值讓使用者決定要用新版的做法還是舊版的，然後default要用舊版的設定，承諾會在之後修正，但不會在10.7.1&lt;/p&gt;
+
+&lt;h2 id=&quot;回顧檢討&quot;&gt;回顧檢討&lt;/h2&gt;
+
+&lt;p&gt;其實之前一樣的版本升級也做過幾次，但第一次出現這麼嚴重的狀況，因此也暴露出了一些問題。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;現有的備份機制做的不太好，應該要有一個能手動進行備份的腳本&lt;/li&gt;
+  &lt;li&gt;版本更新一次跳太多版，還挑了一個才發行5天的release&lt;/li&gt;
+  &lt;li&gt;應該先確認各版本的已知issue後才決定要更新到哪一個版本&lt;/li&gt;
+  &lt;li&gt;沒有環境驗證更新後的結果，等於是直接拿production開刀&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>Jed Lin</name></author><category term="GitLab" /><category term="Upgrade" /><category term="Docker" /><summary type="html">Gitlab 10.3.3 EE 更新 10.7.1 EE的問題 升版失敗 某同事在某一天星期五上午，提早到了公司，依原先的計畫要宰殺升級全部團隊共用的Gitlab Server到最新的10.7.1。 他依照原本設計的SOP進行升級後，如沒有意外的話，這篇文章也就不會出現了…</summary></entry><entry><title type="html">學習敏捷系列 - Daily Scrum</title><link href="http://localhost:4000/2018/01/20/Agile-Scrum-Ceremonies-DailyScrum.html" rel="alternate" type="text/html" title="學習敏捷系列 - Daily Scrum" /><published>2018-01-20T00:00:00+08:00</published><updated>2018-01-20T00:00:00+08:00</updated><id>http://localhost:4000/2018/01/20/Agile-Scrum-Ceremonies-DailyScrum</id><content type="html" xml:base="http://localhost:4000/2018/01/20/Agile-Scrum-Ceremonies-DailyScrum.html">&lt;p&gt;我參與過很多次的傳統瀑布流專案進度匯報會議，不帶杯咖啡進去真的很容易睡著，還好現在有了智慧型手機可以刷FB…(大誤)。&lt;/p&gt;
+
+&lt;p&gt;以我的理解，專案進度匯報會議是比較偏單向的，資訊從一方流向另一方：讓團隊或PM(或PM的老闆)得到最新訊息，接下來PM(或PM的老闆…XD)可能會依專案的狀態進行一些工作項目跟資源上的調度，目的是控制好專案進度，以免造成延遲。&lt;/p&gt;
+
+&lt;p&gt;但Daily Scrum的本質不太一樣，我傾向這樣描述它：
+&lt;!--more--&gt;
+類似系統開機時的自檢，緊接著載入要執行的工作項目，並檢視周邊支援設備是否有異常，如有則必須優先排除以讓工作順利進行。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;從上一次Daily Scrum到現在我做了什麼?&lt;/li&gt;
+  &lt;li&gt;接下來我要做什麼?&lt;/li&gt;
+  &lt;li&gt;我遇到了什麼障礙無法前進?&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;這3個問題形成了一個大致上以天為單位的Feedback loop。藉由頻繁的系統自檢，如果整個開發工作出了問題，比較容易地在問題發生初期就解決它。&lt;/p&gt;
+
+&lt;p&gt;舉例來說：負責需求分析的同事認為他前一天承諾的工作已經結束可以進行下一個需求分析，但另一個準備接手開發的同事並不是這樣想的，他還需要釐清一些細節，而這些細節必須有另一位同事協助。在Daily Scrum短短的15分鐘裡充分揭露這些資訊，就能在結束後進行有效的後續討論。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;call for help + I can help + I’m interested + something is different from our expected
+-Joey 91 replied in FB&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;2018.1.20 以上是我原本發在FB的一篇感想文，之後在準備內訓教材時，覺得有些值得補充的地方，所以整理成這篇文章發在部落格。(話說好久沒發文了…XD)&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;ul&gt;
+    &lt;li&gt;以積極的個人來建構專案，給予他們所需的環境與支援，並信任他們可以完成工作。&lt;/li&gt;
+    &lt;li&gt;面對面的溝通是傳遞資訊給開發團隊及團隊成員之間效率最高且效果最佳的方法。&lt;/li&gt;
+    &lt;li&gt;團隊定期自省如何更有效率，並據之適當地調整與修正自己的行為。&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;這是12條敏捷宣言中的其中3條，Daily Scrum不就正好對應到這3條原則嗎? 對管理層來說，專案的Transparency很重要，故專案管理的手段常見定期的團隊專案進度匯報會議，但以敏捷的精神來說，Daily Scrum無疑是更靈活的方式，而且不僅僅如此，如同91在FB的回應，團隊成員會逐漸學習到承諾、責任與互相信任，從Working Group昇華成為真正意義上的Team。&lt;/p&gt;
+
+&lt;p&gt;學習敏捷只看具體實踐常會讓人感到困惑，唯有深入原則與價值觀才能真正理解與認同敏捷。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn.rawgit.com/jed1978/blog-images/55333eee/agile.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;</content><author><name>Jed Lin</name></author><category term="Agile" /><category term="Scrum" /><category term="Daily Scrum" /><summary type="html">我參與過很多次的傳統瀑布流專案進度匯報會議，不帶杯咖啡進去真的很容易睡著，還好現在有了智慧型手機可以刷FB…(大誤)。 以我的理解，專案進度匯報會議是比較偏單向的，資訊從一方流向另一方：讓團隊或PM(或PM的老闆)得到最新訊息，接下來PM(或PM的老闆…XD)可能會依專案的狀態進行一些工作項目跟資源上的調度，目的是控制好專案進度，以免造成延遲。 但Daily Scrum的本質不太一樣，我傾向這樣描述它：</summary></entry></feed>
