@@ -36,7 +36,7 @@ Could not authenticate you from Ldapmain because "Pg::undefinedcolumn: error: co
 
 ## 問題排查
 
-回到10.7.1後，一開始團隊回報正常，原本以為人品爆發，GitLab恢復正常了，但沒多久開始有人回報這個錯誤
+回到10.7.1後，一開始團隊回報正常，原本以為人品爆發，GitLab恢復正常了，但沒多久開始有人回報這個錯誤
 
 `
 fatal: The remote end hung up unexpectedly
@@ -56,7 +56,7 @@ time="2018-04-27T07:42:48Z" level=fatal error="Failed to bind mount /var/opt/git
 剛好我們之前在建置GitLab時也沒有用到這個功能，所以趕緊在gitlab.rb將Page關閉，然後重啟服務。
 
 `
-gitlab_pages['enable'] = false 
+gitlab_pages['enable'] = false
 `
 
 在重啟服務後，各團隊陸續回報功能已正常，但還是有一個問題回報，就是我們用來跟Jenkins做CI整合的Webhook還是壞的。
