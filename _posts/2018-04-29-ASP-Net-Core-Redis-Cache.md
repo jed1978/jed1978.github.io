@@ -117,7 +117,7 @@ public IActionResult Index()
 }
 {% endhighlight %}
 
-先執行Backend把`MyCache:foo`寫入Redis後，再執行Frontend，然後…
+先執行Backend把`MyCache:foo`寫入Redis後，再執行Frontend，然後…
 
 就會出錯了…XD
 
