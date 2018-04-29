@@ -82,7 +82,7 @@ leancloud:
 
 # mathjax: true
 # mathjax_autoNumber: true
-# mermaid: true
+mermaid: true
 # chart: true
 
 ## Paginate ##
