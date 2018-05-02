@@ -69,7 +69,7 @@ gitalk:
   repository: jed1978.github.io #Github repo
   owner: jed1978 #Github repo owner
   admin: #Github repo owner and collaborators, only these guys can initialize github issues, IT IS A LIST.
-    - owner
+    - jed1978
 
 ## Google Analytics ##
 ga_tracking_id: UA-118355316-1 #Google analytics id for the site
