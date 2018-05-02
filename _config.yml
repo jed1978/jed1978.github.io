@@ -64,12 +64,12 @@ disqus:
 ## Comment system (gitalk) ##
 # please refer to https://github.com/gitalk/gitalk for more info.
 gitalk:
-  # clientID:  #Github Application Client ID
-  # clientSecret:  #Github Application Client Secret
-  # repository:  #Github repo
-  # owner:  #Github repo owner
-  # admin: #Github repo owner and collaborators, only these guys can initialize github issues, IT IS A LIST.
-    # - owner
+  clientID: 3a33c822f667f60d95d3 #Github Application Client ID
+  clientSecret: dfedc07a840cb85d04888719944058452abfb076 #Github Application Client Secret
+  repository: jed1978.github.io #Github repo
+  owner: jed1978 #Github repo owner
+  admin: #Github repo owner and collaborators, only these guys can initialize github issues, IT IS A LIST.
+    - owner
 
 ## Google Analytics ##
 ga_tracking_id: UA-118355316-1 #Google analytics id for the site
