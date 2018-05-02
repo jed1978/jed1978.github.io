@@ -49,8 +49,6 @@ sequenceDiagram
 - 開發環境已安裝好Docker及.Net Core 2.0
 - 具備Docker的基礎知識及基本操作能力
 
-
-
 ### 建立Redis
 
 建立Redis最快的方式就是直接拉一個docker image下來run了，請開啟你的Command Line或Terminal，然後輸入這段指令：
@@ -170,7 +168,7 @@ private const string SetScript = (@"
 
 ## 結論
 
-我個人覺得這真的是一個未依慣例命名造成的認知問題，如果Method改名成HashGet, HashSet，這篇文章應該就不會存在了。
+個人覺得這真的是一個未依慣例命名造成的認知問題，如果Method改名成HashGet, HashSet，這篇文章應該就不會存在了。
 
 此外，如果真的要應用在比較具規模的系統，我應該不會選用DistributedRedisCache，而是針對需求另外設計一個介面去包住StackExchange.Redis
 
