@@ -7,7 +7,7 @@ titles:
   zh-Hant: 關於我
 key: page-about
 ---
-喜歡寫程式、聊架構，擅長高流量線上即時交易系統開發與架構設計
+我是Jed，喜歡寫程式、討論架構，擅長高流量線上即時交易系統開發與架構設計
 
 喜歡團隊開發多於單人開發，認為合格的架構師不能把寫code的能力丟下
 
@@ -15,7 +15,7 @@ key: page-about
 
 ## Skills
 
-- C#, Java Script, Node.Js, Go
+- C#, Java Script
 - ASP.Net Web MVC, ASP.Net Web API
 - .Net Framework, .Net Core
 - Oracle, MS SQL, REDIS
@@ -24,3 +24,7 @@ key: page-about
 - SCRUM, KANBAN
 - TDD, Unit Testing
 - Event-Driven Architecture, Domain-Driven Design, CQRS, In-memory Transaction Architecture
+
+## 認證
+
+![CSM]({{"/assets/images/csm.png"}})
