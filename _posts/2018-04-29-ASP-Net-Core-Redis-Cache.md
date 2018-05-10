@@ -164,7 +164,7 @@ private const string SetScript = (@"
         return 1");
 {% endhighlight %}
 
-<a href="https://github.com/aspnet/Caching/blob/dev/src/Microsoft.Extensions.Caching.Redis/RedisCache.cs" target="_blank">DistributedRedisCache 原始碼連結</a>
+[DistributedRedisCache 原始碼連結](https://github.com/aspnet/Caching/blob/dev/src/Microsoft.Extensions.Caching.Redis/RedisCache.cs){target:"_blank"}
 
 ## 結論
 
