@@ -22,7 +22,7 @@ mermaid: true
 
 還有一些其他的功能比如Pub/Sub、叢集之類的就先不講了，這邊要特別重點解釋Single Thread I/O Multiplex
 
-Redis是Single Thread，這點很重要請牢記，也就是說不管Server上有幾個CPU core，1個Redis instance就是只會用到1個CPU core，而且因為只有1個CPU core，它是無法同時處理多個request的。因此，如果有1個request佔用了太長的CPU時間，就會導致Redis無法回應其他connection送過來的request，這是一開始使用Redis的開發人員很常會犯的錯誤之一，就是把它當成傳統的RDBMS在用，導致效能低落甚至系統crash的都有。
+Redis是Single Thread，這點很重要請牢記，也就是說不管Server上有幾個CPU core，1個Redis instance就是只會用到1個CPU core，而且因為只有1個CPU core，它是無法同時運算多個request的。因此，如果有1個request佔用了太長的CPU時間，就會導致Redis無法回應其他connection送過來的request，這是一開始使用Redis的開發人員很常會犯的錯誤之一，就是把它當成傳統的RDBMS在用，導致效能低落甚至系統crash的都有。
 
 那麼為什麼Redis只有Single thread但卻能有極高的throughput呢? 那就不得不提一下很重要的`Multiplex`，中文翻做多路複用，這在之後要使用的StackExchange.Redis中也是很重要的概念。
 
