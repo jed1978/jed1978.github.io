@@ -173,7 +173,7 @@ sequenceDiagram
     Application->>StackExchange.Redis: Send Value=3
     StackExchange.Redis->>Redis:Send Value=3
     Redis-->>Redis: process
-    Redis-->>StackExchange.Redis: return Value=1, Value=2, Value=3
+    Redis-->>StackExchange.Redis: return Value=1, Value=2, Value=3
     StackExchange.Redis-->>Application: return Value=1, Value=2, Value=3
 ```
 
@@ -189,11 +189,11 @@ sequenceDiagram
     Application->>StackExchange.Redis: Send Value=3
     StackExchange.Redis->>Redis: Batch Send
     Redis-->>Redis: process
-    Redis-->>StackExchange.Redis: return Value=1
+    Redis-->>StackExchange.Redis: return Value=1
     StackExchange.Redis-->>Application: return Value=1
-    Redis-->>StackExchange.Redis: return Value=2
+    Redis-->>StackExchange.Redis: return Value=2
     StackExchange.Redis-->>Application: return Value=2
-    Redis-->>StackExchange.Redis: return Value=3
+    Redis-->>StackExchange.Redis: return Value=3
     StackExchange.Redis-->>Application: return Value=3
 ```
 
