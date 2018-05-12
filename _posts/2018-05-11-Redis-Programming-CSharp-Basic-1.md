@@ -125,7 +125,7 @@ namespace RedisExample
 
         private RedisConnection()
         {
-            redis = ConnectionMultiplexer.Connect(_settingOption);
+            ConnectionMultiplexer = ConnectionMultiplexer.Connect(_settingOption);
         }
 
         public static void Init(string settingOption)
