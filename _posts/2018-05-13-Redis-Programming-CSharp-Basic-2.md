@@ -9,12 +9,11 @@ mermaid: true
 
 延續上一篇[Redis系列 - C#存取Redis (上)]({% post_url 2018-05-11-Redis-Programming-CSharp-Basic-1 %})，這篇文章會說明Redis的簡易Publish/Subscribe、Lua script的基礎知識。
 
-<!--more-->
-
 ## PUBLISH/SUBSCRIBE
 
 Redis的PUB/SUB是很簡易的訊息機制，並不像一些專門的Message Middleware(例如RabbitMQ、ActiveMQ)提供很多豐富的功能，比如它就不保證訊息發送後一定不會遺失，但因為附帶的這個功能實在太方便了，在實務上就經常使用到。
 
+<!--more-->
 StackExchange.Redis對PUB/SUB的支援很完整，範例程式碼如下
 
 ***`RedisConnection`的程式碼請參考[Redis系列 - C#存取Redis (上)]({% post_url 2018-05-11-Redis-Programming-CSharp-Basic-1 %})***
