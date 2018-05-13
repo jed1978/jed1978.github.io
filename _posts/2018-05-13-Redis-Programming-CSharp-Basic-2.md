@@ -11,7 +11,7 @@ mermaid: true
 
 ## PUBLISH/SUBSCRIBE
 
-Redis的PUB/SUB是很簡易的訊息機制，並不像一些專門的Message Middleware(例如RabbitMQ、ActiveMQ)提供很多豐富的功能，比如它就不保證訊息發送後一定不會遺失，但因為附帶的這個功能實在太方便了，在實務上就經常使用到。
+Redis的PUB/SUB是很簡易的訊息機制，並不像一些專門的Message Middleware(例如RabbitMQ、ActiveMQ)提供很多豐富的功能，比如它就不保證訊息發送後一定不會遺失，但因為附帶的這個功能實在太方便了，實務上還是經常使用到。
 
 <!--more-->
 StackExchange.Redis對PUB/SUB的支援很完整，範例程式碼如下
