@@ -7,7 +7,7 @@ mermaid: true
 ---
 # C#存取Redis - Timeout trouble shooting
 
-這一篇是討論Timeout trouble shooting為主，有一些基礎知識不再贅述，請請參考本人之前的文章。
+這一篇是討論Timeout trouble shooting為主，有一些基礎知識不再贅述，請參考本人之前的文章。
 
 - [Redis系列 - 環境建置篇]({% post_url 2018-05-02-Redis-Environment-Installation-Configuration %})
 - [Redis系列 - C#存取Redis (上)]({% post_url 2018-05-11-Redis-Programming-CSharp-Basic-1 %})
