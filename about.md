@@ -27,4 +27,5 @@ key: page-about
 
 ## 認證
 
-![CSM]({{"/assets/images/csm.png"}})
+![CSM]({{"/assets/images/seal-csm.png"}}){:width="100px"}
+![CSD]({{"/assets/images/seal-csd.png"}}){:width="100px"}
