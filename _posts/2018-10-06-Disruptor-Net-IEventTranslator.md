@@ -27,7 +27,7 @@ _ringBuffer.Publish(sequence);
 
 RingBuffer因其特殊的設計，在使用上比傳統的Queue來的複雜，這段程式碼如果不加上try catch/finally，確保最終要把這個sequence發布到RingBuffer，將造成整個RingBuffer停滯不前，必須重啟才能恢復，這在MultiProducer特別容易發生，對一個In-Memory Transaction系統來說，是個非常致命的問題。
 
-所以這段程式碼必須要改成這樣，因而增加了程式碼的複雜度
+所以這段程式碼必須要改成這樣，因而增加了程式碼的複雜度
 
 ```csharp
 var sequence = 0L;
