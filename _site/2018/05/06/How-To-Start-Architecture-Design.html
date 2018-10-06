@@ -1,9 +1,9 @@
 <!DOCTYPE html><html lang="zh-Hant">
   <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>Upgrade GitLab from 10.3.3 to 10.7.1 - Jed's blog</title>
-<meta name="description" content="Gitlab 10.3.3 EE 更新 10.7.1 EE的問題升版失敗某同事在某一天星期五上午，提早到了公司，依原先的計畫要宰殺升級全部團隊共用的Gitlab Server到最新的10.7.1。他依照原本設計的SOP進行升級後，如沒有意外的話，這篇文章也就不會出現了…">
-<link rel="canonical" href="http://localhost:4000/2018/04/27/GitLab-Upgrade-500-Error.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>如何開始架構設計 - Jed's blog</title>
+<meta name="description" content="需求決定架構一開始就直接破題了，軟體架構不是看著國內外大神分享的架構簡報抄一遍就好，也不是完全靠經驗決定架構怎麼設計。所有的架構設計都是由需求決定，我指的需求不單單指需求規格書上的功能性需求(Funtional Requirements)，還包括了很容易被忽視的非功能性需求(Non-Functional Requ...">
+<link rel="canonical" href="http://localhost:4000/2018/05/06/How-To-Start-Architecture-Design.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
 <!-- for Safari on iOS https://developer.apple.com/ios/human-interface-guidelines/icons-and-images/app-icon/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/images/logo/icon-180x180.png"><link rel="apple-touch-icon" sizes="167x167" href="/assets/images/logo/icon-167x167.png"><link rel="apple-touch-icon" sizes="152x152" href="/assets/images/logo/icon-152x152.png"><link rel="apple-touch-icon" sizes="120x120" href="/assets/images/logo/icon-120x120.png"><link rel="shortcut icon" href="/assets/images/logo/icon-120x120.png">
 <!-- for Chrome on Android https://developer.chrome.com/multidevice/android/installtohomescreen -->
 <meta name="mobile-web-app-capable" content="yes"><link rel="icon" sizes="192x192" href="/assets/images/logo/icon-192x192.png">
@@ -238,119 +238,218 @@
 		<div class="col-1">
 			<article class="js-article" itemscope itemtype="http://schema.org/BlogPosting">
 				<meta itemprop="mainEntityOfPage" itemscope itemType="https://schema.org/WebPage"/>
-				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">Upgrade GitLab from 10.3.3 to 10.7.1</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
-          <a class="pill-button" href="/all.html?tag=GitLab">GitLab</a>
+				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">如何開始架構設計</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=Architecture">Architecture</a>
         </li><li>
-          <a class="pill-button" href="/all.html?tag=Upgrade">Upgrade</a>
+          <a class="pill-button" href="/all.html?tag=%E6%9E%B6%E6%A7%8B%E8%A8%AD%E8%A8%88">架構設計</a>
         </li><li>
-          <a class="pill-button" href="/all.html?tag=Docker">Docker</a>
+          <a class="pill-button" href="/all.html?tag=%E9%9C%80%E6%B1%82">需求</a>
         </li></ul><div class="other-wrapper"><div class="view-wrapper">
-        <span class="article-view" data-page-key="GitLab">0
+        <span class="article-view" data-page-key="Architecture">0
         </span> 閱讀
-      </div><div class="date-wrapper"><time class="article-meta" datetime="2018-04-27T00:00:00+08:00"
-          itemprop="datePublished">2018年 04月27日
+      </div><div class="date-wrapper"><time class="article-meta" datetime="2018-05-06T00:00:00+08:00"
+          itemprop="datePublished">2018年 05月06日
         </time></div>
   </div>
 </div>
 </header>
-				<div class="m-article-content js-article-content" itemprop="articleBody"><h1 id="gitlab-1033-ee-更新-1071-ee的問題">Gitlab 10.3.3 EE 更新 10.7.1 EE的問題</h1>
+				<div class="m-article-content js-article-content" itemprop="articleBody"><h1 id="需求決定架構">需求決定架構</h1>
 
-<h2 id="升版失敗">升版失敗</h2>
+<p>一開始就直接破題了，軟體架構不是看著國內外大神分享的架構簡報抄一遍就好，也不是完全靠經驗決定架構怎麼設計。</p>
 
-<p>某同事在某一天星期五上午，提早到了公司，依原先的計畫要<del>宰殺</del>升級全部團隊共用的Gitlab Server到最新的10.7.1。</p>
-
-<p>他依照原本設計的SOP進行升級後，如沒有意外的話，這篇文章也就不會出現了…
+<p>所有的架構設計都是由需求決定，我指的需求不單單指需求規格書上的<code class="highlighter-rouge">功能性需求(Funtional Requirements)</code>，還包括了很容易被忽視的<code class="highlighter-rouge">非功能性需求(Non-Functional Requirements)</code>與<code class="highlighter-rouge">約束(Constraints)</code>。
 <!--more--></p>
 
-<p>通訊群組內通知大家升級完成，期望的美好未來沒有發生，團隊陸續回報了下列問題</p>
+<h2 id="需求如何影響架構">需求如何影響架構</h2>
+
+<p>一個軟體專案的失敗原因很多，但追根究柢還是肇因於對需求沒有共識。</p>
+
+<p>同樣的，一個軟體系統架構設計的好與壞，也是取決於架構師對這幾類需求的理解有多透徹。</p>
+
+<h3 id="功能性需求">功能性需求</h3>
+
+<p>功能性需求會影響的是職責與協作，不同的功能我們會依其所屬的Domain特性進行分類，且要決定它們之間如何溝通，既要降低耦合，還要提高內聚。</p>
+
+<p>舉例來說，一個線上購物網站是一個大的domain，裡面會涉及很多Sub domain，不同的Sub domain彼此協同合作並組合成一個系統，Sub domain可能還會再拆分成不同的模組，模組與模組之間的溝通就需要決定交換資訊的方式。</p>
+
+<pre><code class="language-mermaid">graph TD
+    A(Login)-.-C(Member)
+    B(Register)-.-C
+    D(Product)-.-E(ShoppingCart)
+    C-.-E
+    E-.-G
+    G(Order)-.-F(Payment)
+    D-.-G
+    G-.-H(Deliver)
+    C-.-G
+</code></pre>
+
+<h3 id="約束">約束</h3>
+
+<p>在談非功能需求之前，得要先談<code class="highlighter-rouge">約束</code>，因為非功能需求決定的是品質，而約束決定的是這個架構現不現實，靠不靠譜，而且非功能性需求大多時候是要將功能性需求+約束條件放在一起看，才能決定哪些非功能性需求可以被滿足。</p>
+
+<p>什麼是約束? <strong>約束指的是所處的環境下，無法改變或改變成本過高的遊戲規則</strong></p>
+
+<p>舉例來說，老闆或客戶壓下來的時程、政府法規、公司可用資金、團隊技術能力、舊有系統架構包袱…等等，是一種<code class="highlighter-rouge">環境限制</code>。</p>
+
+<p>因此，設計架構時不能不考慮這些約束，不然就很容易成為<code class="highlighter-rouge">太空架構師</code>或<code class="highlighter-rouge">神級架構師</code>，因為你提的架構也許很厲害很強大，但無法落地的架構要嘛就是一直不落地，要嘛就是修修改改後有很高的概率成為所有人的惡夢。</p>
+
+<h3 id="非功能性需求">非功能性需求</h3>
+
+<p>Non-Functional Requirements(NFRs)決定的是<code class="highlighter-rouge">品質</code></p>
+
+<p>品質不是測試出來的，軟體系統的品質天花板取決於架構設計滿足多少非功能性需求，因此非功能性需求又被稱為<code class="highlighter-rouge">品質屬性</code>。</p>
+
+<p>可是架構設計最難的地方就在這，因為這些NFRs很多是彼此互斥的，再加上約束條件的環境限制，不可能每項都滿足，因此就必須做出取捨(Trade-off)。</p>
+
+<p>舉例來說，Performance很重要，如果想要讓交易寫入DB的效能最大化，就是把相關的Table集中在同一個DB，使用Stored Procedure並減少不必要的索引，但這樣以DB為主的架構不易Scale out只能Scale up，因此Scalability就跟Performance及Capacity產生互斥，短期可能系統比較快上線，但長期會造成其他問題增加成本。</p>
+
+<p>可是如果採用分散式的做法，以現有的Schema設計，又會面臨Data integrity與Performance可能無法滿足，那還要再加上Schema的架構調整…。</p>
+
+<p>看起來挺糾結的，是吧?</p>
+
+<h2 id="架構師要懂的需求結構化">架構師要懂的需求結構化</h2>
+
+<p>說完了這三類需求，那架構師該怎麼生存下去? 要求寫需求規格書的需求分析師把這些寫進去肯定不現實，再退一步講，架構師不能依賴文件，尤其是需求規格書。</p>
+
+<p>以前我很依賴需求規格書，但實際的軟體開發與設計經驗告訴我，這樣的架構設計無法建構在完整的大局觀之下，後續的不良影響會很深遠。首先，需求分析師很多都不是技術背景出身，並不那麼理解功能性需求、約束與非功能性需求之間是如何互相影響。再者，需求分析師訪談的對象往往只是使用者，拿的是使用者需求，觀點被侷限住了，使用者通常很難告訴我們系統要如何易於擴展，效能要多好才符合未來的業務成長，因此需求規格書內就很不容易把這部份的需求寫的很清楚。</p>
+
+<p>但沒關係，這也不是需求分析師的錯，需求規格本來就得要經過討論溝通，我們使用文件但不依賴文件，分門別類把需求結構化，然後有系統的去分析它們造成的影響。</p>
+
+<p>架構設計要分析的需求不是全部需求項目都拿出來分析，要分析的只有關鍵需求，那是整個架構設計需做出取捨最關鍵的部份，另一方面架構設計愈早開始愈好，等到需求規格書要寫完，專案差不多已經進開發階段了，這時才開始做架構設計就太慢了。</p>
+
+<p>前面提到需求分三類，但沒提到的是角色，角色包括<code class="highlighter-rouge">組織</code>、<code class="highlighter-rouge">使用者</code>、<code class="highlighter-rouge">開發團隊</code>、<code class="highlighter-rouge">維運團隊</code>四類，這四類分別代表了不同的層面與觀點，而架構設計就是要從這四個層面逐步找出關鍵需求。</p>
 
 <ul>
-  <li>ssh: connect to host gitlab.xxxx.net port 8022: Connection refused</li>
-  <li>Internal 500 Error</li>
+  <li>組織層面
+    <ul>
+      <li>需求：Business Goal
+        <ul>
+          <li>跨境電商平台網站</li>
+          <li>提升不同地區的市佔率</li>
+          <li>未來能快速增加相關的營運項目</li>
+        </ul>
+      </li>
+      <li>約束：組織層面的約束
+        <ul>
+          <li>Time to market</li>
+          <li>可用資金</li>
+          <li>法規限制</li>
+          <li>24H持續營運</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>使用者層面
+    <ul>
+      <li>需求：各種使用者觀點的功能性需求
+        <ul>
+          <li>物流：與當地物流整合</li>
+          <li>行銷企畫：靈活的地區促銷管理</li>
+          <li>營運：多種銷售平台</li>
+        </ul>
+      </li>
+      <li>約束：使用者層級約束
+        <ul>
+          <li>支援多國語言</li>
+          <li>End user的使用習慣</li>
+          <li>物流商整合技術能力薄弱</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>開發團隊層面
+    <ul>
+      <li>需求
+        <ul>
+          <li>系統易於擴展整合</li>
+        </ul>
+      </li>
+      <li>約束
+        <ul>
+          <li>開發團隊人力有限</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>維運團隊層面
+    <ul>
+      <li>需求
+        <ul>
+          <li>容易且快速的部署方式</li>
+          <li>靈活的Alert設定</li>
+        </ul>
+      </li>
+      <li>約束
+        <ul>
+          <li>主機虛擬化，管理系統數量龐大</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
 </ul>
 
-<p>因為事態嚴重，全公司十多個團隊同時發生，所以趕快進行降版復原</p>
+<p>這四個層面可以先由上而下，逐步找出關鍵需求與約束，然後再依關鍵需求與約束的邏輯推導出<code class="highlighter-rouge">使用者層級的關鍵非功能性需求</code>。</p>
 
-<p>但這不是一個童話故事，惡夢並未在降版後就結束了，這是成人世界殘酷的現實…</p>
+<p>一樣舉個例子來看一下：</p>
 
-<h2 id="降版失敗">降版失敗</h2>
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th>功能性需求</th>
+      <th>約束</th>
+      <th>使用者層級</th>
+      <th>非功能性需求</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>組織</td>
+      <td>跨境電商平台網站</td>
+      <td>24H持續營運</td>
+      <td>營運</td>
+      <td>高可用性, 高安全性</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>End user</td>
+      <td>性能(Response time)</td>
+    </tr>
+    <tr>
+      <td>物流</td>
+      <td>與當地物流整合</td>
+      <td>物流商整合技術能力薄弱</td>
+      <td>物流商IT</td>
+      <td>整合API易用性, 重用性</td>
+    </tr>
+  </tbody>
+</table>
 
-<p>降版後，回報的問題不見了，但取而代之的是AD驗證失敗</p>
+<p>為什麼一定要是使用者層級的? 在整理關鍵需求及推導關鍵非功能性需求時，通常會遇到衝突的需求，架構師得要知道取捨，我的觀點是<strong>一切需求都有其業務價值，唯有用同一種價值單位才能對這些需求的優先級進行排序</strong>，因此你在取捨時才有依據。</p>
 
-<p><code class="highlighter-rouge">
-Could not authenticate you from Ldapmain because "Pg::undefinedcolumn: error: column namespaces.deleted at does not exist line 1: ...s" where ("namespaces"."name" = 'jxxxx.xxxx' and "namespace... ^ : select 1 as one from "namespaces" where ("namespaces"."name" = 'jxxxx.xxxx' and "namespaces"."deleted at" is null and "namespaces"."id" != xx and "namespaces"."parent id" is null) limit 1".
-</code></p>
+<p>如果這些需求被定位成技術需求而不是業務需求，那麼在需求排序時就會因為標準不一，很容易被犧牲掉，對架構設計的取捨也就沒有依據，你有很大的可能性做出錯的架構設計。</p>
 
-<p>對，降版失敗! 雖然同事在升級前有備份完整的設定檔，但還原後確發生了其他的問題，懷疑是Gitlab內部在某一版後變更了DB的schema。 由於狀況愈來愈嚴重，跟執行更新的同事討論後，決定再次升級回10.7.1，讓所有團隊可以先建置要部署到QAT的package。</p>
+<h2 id="結論">結論</h2>
 
-<p>開弓沒有回頭路，我們只能嘗試看看能不能找到解決方法。</p>
+<p>很少人會談需求跟架構設計的關係，寫架構Pattern的很多，照著搬常會砸到自己的腳，還是要回到有需求才有架構設計，只是需求一直很難說的清楚，特別是在非功能性需求的部份，要先探索需求，然後跟寫程式一樣找出需求規格，最後驗證它的可行性。</p>
 
-<h2 id="問題排查">問題排查</h2>
+<h2 id="後記">後記</h2>
 
-<p>回到10.7.1後，一開始團隊回報正常，原本以為人品爆發，GitLab恢復正常了，但沒多久開始有人回報這個錯誤</p>
-
-<p><code class="highlighter-rouge">
-fatal: The remote end hung up unexpectedly
-error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500 Internal Server Error
-</code></p>
-
-<p>接下來沒多久，Internal 500 ERROR也跟著出現，嘗試著重啟服務後又正常一陣子，但約20分鐘後這個狀況就會重覆發生。我們開始逐一清查可疑的部份，這段期間就委曲團隊只能用20分鐘，然後重啟服務。</p>
-
-<p>在檢查了很多部份後，注意到一個錯誤訊息非常可疑</p>
-
-<p><code class="highlighter-rouge">
-time="2018-04-27T07:42:48Z" level=fatal error="Failed to bind mount /var/opt/gitlab/gitlab-rails/shared/pages on /tmp/gitlab-pages-1524814968737227221/pages. operation not permitted"
-</code></p>
-
-<p>我查了一下GitLab官方的issue列表，發現在5天前有人在10.7.0回報這個<a href="https://gitlab.com/gitlab-org/gitlab-pages/issues/129">issue</a>，我仔細的讀了整個討論串，確定這個issue在10.7.1並未被修正，也有其他網友提出了workaround，就是把GitLab Page先disabled。</p>
-
-<p>剛好我們之前在建置GitLab時也沒有用到這個功能，所以趕緊在gitlab.rb將Page關閉，然後重啟服務。</p>
-
-<p><code class="highlighter-rouge">
-gitlab_pages['enable'] = false
-</code></p>
-
-<p>在重啟服務後，各團隊陸續回報功能已正常，但還是有一個問題回報，就是我們用來跟Jenkins做CI整合的Webhook還是壞的。</p>
-
-<p>到GitLab的Webhook頁面按下Push測試，依然會出現500 ERROR的錯誤頁面，研判可能不是同一個問題(<code class="highlighter-rouge">後續解釋第一個問題時，就會知道為什麼我會判斷不是同一個問題</code>)，上網google了一下，原來是在10.5.6版時對Outbound Request新增了一個設定，用Admin的權限登入設定後，團隊回報功能正常，終於結束這個GitLab升級事件。</p>
-
-<h2 id="問題原因分析">問題原因分析</h2>
-
-<p>這次的主要問題是升級後的500 ERROR，雖然source code不用擔心會掉，但還是造成很大的不便。</p>
-
-<p>根據GitLab的開發人員解釋，這個問題跟Docker有關係，然後我們剛好就是用官方的Omnibus Docker image建置GitLab。</p>
-
-<p>GitLab有一個Page功能，就像是GitHub的Page一樣，用來建置靜態網站，因為這功能會佔用較多磁碟空間，原本是用in-place的方式在Docker內部調用chroot掛載外部Volume</p>
-
-<p>在10.7.0改版後，改成用bind mounting的方式來掛載外部Volume，這對privileged container來說是比較方便的，但<strong>同時他們也移掉了舊版的in-place方式</strong></p>
-
-<p>問題來了，我們用的官方Omnibus docker image是以Unprivileged 的方式發行，意味著裡面的user不具備外部環境的root權限，所以沒辦法在container內直接使用bind mounting的方式掛載外部的volume，只能用chroot</p>
-
-<p>但因為我們其實沒有開啟GitLab Page的功能，所以直接在參數內關閉Page，繞過了這個issue</p>
-
-<p>官方說這應該要變成一個新功能，提供一個設定值讓使用者決定要用新版的做法還是舊版的，然後default要用舊版的設定，承諾會在之後修正，但不會在10.7.1</p>
-
-<h2 id="回顧檢討">回顧檢討</h2>
-
-<p>其實之前一樣的版本升級也做過幾次，但第一次出現這麼嚴重的狀況，因此也暴露出了一些問題。</p>
-
-<ul>
-  <li>現有的備份機制做的不太好，應該要有一個能手動進行備份的腳本</li>
-  <li>版本更新一次跳太多版，還挑了一個才發行5天的release</li>
-  <li>應該先確認各版本的已知issue後才決定要更新到哪一個版本</li>
-  <li>沒有環境驗證更新後的結果，等於是直接拿production開刀</li>
-</ul>
+<p>這篇文章我覺得真的很難寫，因為知道該怎麼做是一回事，但要有條理的寫出來又是另一回事，要一直梳理想法跟做法，但這個過程對我個人的幫助真的很大，有些模糊的想法也變的比較具體，在架構設計也有了一些新的領悟。</p>
 </div>
-				<footer><meta itemprop="dateModified" content="2018-04-27T00:00:00+08:00"><div class="article-license"><div class="m-license"><div class="clearfix"><a class="octocat" href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-04-27-GitLab-Upgrade-500-Error.md">
+				<footer><meta itemprop="dateModified" content="2018-05-06T00:00:00+08:00"><div class="article-license"><div class="m-license"><div class="clearfix"><a class="octocat" href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-05-06-How-To-Start-Architecture-Design.md">
         <img alt="View on Github" src="/assets/images/octocat.jpg" />
-      </a><p><a href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-04-27-GitLab-Upgrade-500-Error.md">在 Github 上查閱此文。</a></p><p>本文遵守 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> 許可協議。</p><a class="license" rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
+      </a><p><a href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-05-06-How-To-Start-Architecture-Design.md">在 Github 上查閱此文。</a></p><p>本文遵守 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> 許可協議。</p><a class="license" rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
       <img alt="Creative Commons License" src="/assets/images/license-cc4.png" />
     </a><p>歡迎轉載，轉載需註明出處，且禁止用於商業目的。</p>
   </div>
 </div></div>
 				</footer>
 			</article>
-			<div class="article-previous-next clearfix"><div class="article-previous"><span>上篇</span><a href="/2018/04/29/ASP-Net-Core-Redis-Cache.html">ASP.Net Core - DistributedRedisCache</a></div><div class="article-next"><span>下篇</span><a href="/2018/01/20/Agile-Scrum-Ceremonies-DailyScrum.html">學習敏捷系列 - Daily Scrum</a></div></div></div>
+			<div class="article-previous-next clearfix"><div class="article-previous"><span>上篇</span><a href="/2018/05/11/Redis-Programming-CSharp-Basic-1.html">Redis系列 - C#存取Redis (上)</a></div><div class="article-next"><span>下篇</span><a href="/2018/05/03/CI-setup-dotnet-build-server.html">學習CI系列 - 建立.Net build server</a></div></div></div>
 	</div>
 </div></div>
       </div>

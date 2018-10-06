@@ -1,9 +1,9 @@
 <!DOCTYPE html><html lang="zh-Hant">
   <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>Upgrade GitLab from 10.3.3 to 10.7.1 - Jed's blog</title>
-<meta name="description" content="Gitlab 10.3.3 EE 更新 10.7.1 EE的問題升版失敗某同事在某一天星期五上午，提早到了公司，依原先的計畫要宰殺升級全部團隊共用的Gitlab Server到最新的10.7.1。他依照原本設計的SOP進行升級後，如沒有意外的話，這篇文章也就不會出現了…">
-<link rel="canonical" href="http://localhost:4000/2018/04/27/GitLab-Upgrade-500-Error.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>Redis系列 - C#存取Redis (下) - Jed's blog</title>
+<meta name="description" content="C#存取Redis - Timeout trouble shooting這一篇是討論Timeout trouble shooting為主，有一些基礎知識不再贅述，請參考本人之前的文章。  Redis系列 - 環境建置篇  Redis系列 - C#存取Redis (上)  Redis系列 - C#存取Redis (中)">
+<link rel="canonical" href="http://localhost:4000/2018/05/20/Redis-Programming-CSharp-Basic-3.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
 <!-- for Safari on iOS https://developer.apple.com/ios/human-interface-guidelines/icons-and-images/app-icon/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/images/logo/icon-180x180.png"><link rel="apple-touch-icon" sizes="167x167" href="/assets/images/logo/icon-167x167.png"><link rel="apple-touch-icon" sizes="152x152" href="/assets/images/logo/icon-152x152.png"><link rel="apple-touch-icon" sizes="120x120" href="/assets/images/logo/icon-120x120.png"><link rel="shortcut icon" href="/assets/images/logo/icon-120x120.png">
 <!-- for Chrome on Android https://developer.chrome.com/multidevice/android/installtohomescreen -->
 <meta name="mobile-web-app-capable" content="yes"><link rel="icon" sizes="192x192" href="/assets/images/logo/icon-192x192.png">
@@ -238,119 +238,155 @@
 		<div class="col-1">
 			<article class="js-article" itemscope itemtype="http://schema.org/BlogPosting">
 				<meta itemprop="mainEntityOfPage" itemscope itemType="https://schema.org/WebPage"/>
-				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">Upgrade GitLab from 10.3.3 to 10.7.1</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
-          <a class="pill-button" href="/all.html?tag=GitLab">GitLab</a>
+				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">Redis系列 - C#存取Redis (下)</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=Redis">Redis</a>
         </li><li>
-          <a class="pill-button" href="/all.html?tag=Upgrade">Upgrade</a>
+          <a class="pill-button" href="/all.html?tag=C%23">C#</a>
         </li><li>
-          <a class="pill-button" href="/all.html?tag=Docker">Docker</a>
+          <a class="pill-button" href="/all.html?tag=StackExchange.Redis">StackExchange.Redis</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Trouble+Shooting">Trouble Shooting</a>
         </li></ul><div class="other-wrapper"><div class="view-wrapper">
-        <span class="article-view" data-page-key="GitLab">0
+        <span class="article-view" data-page-key="Redis-Programming-CSharp-Basic-3">0
         </span> 閱讀
-      </div><div class="date-wrapper"><time class="article-meta" datetime="2018-04-27T00:00:00+08:00"
-          itemprop="datePublished">2018年 04月27日
+      </div><div class="date-wrapper"><time class="article-meta" datetime="2018-05-20T00:00:00+08:00"
+          itemprop="datePublished">2018年 05月20日
         </time></div>
   </div>
 </div>
 </header>
-				<div class="m-article-content js-article-content" itemprop="articleBody"><h1 id="gitlab-1033-ee-更新-1071-ee的問題">Gitlab 10.3.3 EE 更新 10.7.1 EE的問題</h1>
+				<div class="m-article-content js-article-content" itemprop="articleBody"><h1 id="c存取redis---timeout-trouble-shooting">C#存取Redis - Timeout trouble shooting</h1>
 
-<h2 id="升版失敗">升版失敗</h2>
-
-<p>某同事在某一天星期五上午，提早到了公司，依原先的計畫要<del>宰殺</del>升級全部團隊共用的Gitlab Server到最新的10.7.1。</p>
-
-<p>他依照原本設計的SOP進行升級後，如沒有意外的話，這篇文章也就不會出現了…
-<!--more--></p>
-
-<p>通訊群組內通知大家升級完成，期望的美好未來沒有發生，團隊陸續回報了下列問題</p>
+<p>這一篇是討論Timeout trouble shooting為主，有一些基礎知識不再贅述，請參考本人之前的文章。</p>
 
 <ul>
-  <li>ssh: connect to host gitlab.xxxx.net port 8022: Connection refused</li>
-  <li>Internal 500 Error</li>
+  <li><a href="/2018/05/02/Redis-Environment-Installation-Configuration.html">Redis系列 - 環境建置篇</a></li>
+  <li><a href="/2018/05/11/Redis-Programming-CSharp-Basic-1.html">Redis系列 - C#存取Redis (上)</a></li>
+  <li><a href="/2018/05/13/Redis-Programming-CSharp-Basic-2.html">Redis系列 - C#存取Redis (中)</a></li>
 </ul>
 
-<p>因為事態嚴重，全公司十多個團隊同時發生，所以趕快進行降版復原</p>
+<!--more-->
 
-<p>但這不是一個童話故事，惡夢並未在降版後就結束了，這是成人世界殘酷的現實…</p>
+<p><code class="highlighter-rouge">System.TimeoutException</code>是很常看到的Exception之一，發生的時候會看到類似這樣的錯誤訊息:</p>
 
-<h2 id="降版失敗">降版失敗</h2>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">System</span><span class="p">.</span><span class="n">TimeoutException</span><span class="p">:</span> <span class="n">Timeout</span> <span class="n">performing</span> <span class="n">MGET</span> <span class="m">2728</span><span class="n">cc84</span><span class="p">-</span><span class="m">58</span><span class="n">ae</span><span class="p">-</span><span class="m">406</span><span class="n">b</span><span class="p">-</span><span class="m">8</span><span class="n">ec8</span><span class="p">-</span><span class="m">3f962419f641</span><span class="p">,</span>
+<span class="n">inst</span><span class="p">:</span> <span class="m">1</span><span class="p">,</span><span class="n">mgr</span><span class="p">:</span> <span class="n">Inactive</span><span class="p">,</span> <span class="n">queue</span><span class="p">:</span> <span class="m">73</span><span class="p">,</span> <span class="n">qu</span><span class="p">=</span><span class="m">6</span><span class="p">,</span> <span class="n">qs</span><span class="p">=</span><span class="m">67</span><span class="p">,</span> <span class="n">qc</span><span class="p">=</span><span class="m">0</span><span class="p">,</span> <span class="n">wr</span><span class="p">=</span><span class="m">1</span><span class="p">/</span><span class="m">1</span><span class="p">,</span> <span class="k">in</span><span class="p">=</span><span class="m">0</span><span class="p">/</span><span class="m">0</span>
+<span class="n">IOCP</span><span class="p">:</span> <span class="p">(</span><span class="n">Busy</span><span class="p">=</span><span class="m">6</span><span class="p">,</span> <span class="n">Free</span><span class="p">=</span><span class="m">999</span><span class="p">,</span> <span class="n">Min</span><span class="p">=</span><span class="m">2</span><span class="p">,</span><span class="n">Max</span><span class="p">=</span><span class="m">1000</span><span class="p">),</span> <span class="nf">WORKER</span> <span class="p">(</span><span class="n">Busy</span><span class="p">=</span><span class="m">7</span><span class="p">,</span><span class="n">Free</span><span class="p">=</span><span class="m">8184</span><span class="p">,</span><span class="n">Min</span><span class="p">=</span><span class="m">2</span><span class="p">,</span><span class="n">Max</span><span class="p">=</span><span class="m">8191</span><span class="p">)</span>
+</code></pre></div></div>
 
-<p>降版後，回報的問題不見了，但取而代之的是AD驗證失敗</p>
+<p>這個錯誤訊息跟StackExchange.Redis的sync timout設定值有很直接的關聯，預設值是1000 ms。</p>
 
-<p><code class="highlighter-rouge">
-Could not authenticate you from Ldapmain because "Pg::undefinedcolumn: error: column namespaces.deleted at does not exist line 1: ...s" where ("namespaces"."name" = 'jxxxx.xxxx' and "namespace... ^ : select 1 as one from "namespaces" where ("namespaces"."name" = 'jxxxx.xxxx' and "namespaces"."deleted at" is null and "namespaces"."id" != xx and "namespaces"."parent id" is null) limit 1".
-</code></p>
+<p>sync time是指從發送同步request到收到response的時間，不能超過sync timeout的設定值。</p>
 
-<p>對，降版失敗! 雖然同事在升級前有備份完整的設定檔，但還原後確發生了其他的問題，懷疑是Gitlab內部在某一版後變更了DB的schema。 由於狀況愈來愈嚴重，跟執行更新的同事討論後，決定再次升級回10.7.1，讓所有團隊可以先建置要部署到QAT的package。</p>
+<p>大部份的情況都很夠用了，但如果有以下幾類狀況就有可能引發這個Exception。</p>
 
-<p>開弓沒有回頭路，我們只能嘗試看看能不能找到解決方法。</p>
+<h2 id="high-cpu-usagememory-pressurenetwork-latency">High CPU usage/Memory pressure/Network latency</h2>
 
-<h2 id="問題排查">問題排查</h2>
+<p>這一類屬於環境問題。</p>
 
-<p>回到10.7.1後，一開始團隊回報正常，原本以為人品爆發，GitLab恢復正常了，但沒多久開始有人回報這個錯誤</p>
+<p>CPU or Memory使用率過高是屬於CPU bound的問題，會影響執行StackExchange.Redis的Thread無法獲得CPU資源，進而發生Timeout。CPU是直接影響，而Memory是因為CLR的Garbage Collection機制，當開始GC時會暫停所有工作。對Redis server來說，很可能發送出去的指令早就已經被處理完成並回傳了，卻因為上述情形，造成處理時間最終超過sync timeout的設定值。</p>
 
-<p><code class="highlighter-rouge">
-fatal: The remote end hung up unexpectedly
-error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500 Internal Server Error
-</code></p>
+<p>Network latency則是I/O bound，網路環境如果不是很穩定，比如跨Internet存取Redis，可能某個路由節點不穩定讓網路延遲變成500ms，request+response來回就是1000ms，那麼就會發生timeout了。若是屬於跨網路存取的高延遲，可以考慮將<code class="highlighter-rouge">Sync timeout</code>的設定值調高一些。</p>
 
-<p>接下來沒多久，Internal 500 ERROR也跟著出現，嘗試著重啟服務後又正常一陣子，但約20分鐘後這個狀況就會重覆發生。我們開始逐一清查可疑的部份，這段期間就委曲團隊只能用20分鐘，然後重啟服務。</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">conn</span> <span class="p">=</span> <span class="n">ConnectionMultiplexer</span><span class="p">.</span><span class="nf">Connect</span><span class="p">(</span><span class="s">"localhost:6379, synctimeout=1500"</span><span class="p">);</span>
+</code></pre></div></div>
 
-<p>在檢查了很多部份後，注意到一個錯誤訊息非常可疑</p>
+<h2 id="burst-traffic">Burst Traffic</h2>
 
-<p><code class="highlighter-rouge">
-time="2018-04-27T07:42:48Z" level=fatal error="Failed to bind mount /var/opt/gitlab/gitlab-rails/shared/pages on /tmp/gitlab-pages-1524814968737227221/pages. operation not permitted"
-</code></p>
+<p>瞬間流量暴增，這個狀況就要先談一下CLR的ThreadPool跟IOCP/WORKER之間的關係。</p>
 
-<p>我查了一下GitLab官方的issue列表，發現在5天前有人在10.7.0回報這個<a href="https://gitlab.com/gitlab-org/gitlab-pages/issues/129">issue</a>，我仔細的讀了整個討論串，確定這個issue在10.7.1並未被修正，也有其他網友提出了workaround，就是把GitLab Page先disabled。</p>
+<p>CLR的ThreadPool有2種類型的執行緒(Thread)，一種是<code class="highlighter-rouge">IOCP(I/O Completion Port) thread</code>，另一種就是<code class="highlighter-rouge">Worker thread</code>，這2類其實都是thread，只是Worker thread是給一般非同步工作用的，而IOCP thread是另外保留給非同步I/O執行時使用的。</p>
 
-<p>剛好我們之前在建置GitLab時也沒有用到這個功能，所以趕緊在gitlab.rb將Page關閉，然後重啟服務。</p>
+<p>ThreadPool在管理這些threads時，有一個<code class="highlighter-rouge">MinThreads</code>的設定，預設值取決於有多少個CPU core，例如有4個CPU core，則預設有4條Worker threads與4條IOCP threads。</p>
 
-<p><code class="highlighter-rouge">
-gitlab_pages['enable'] = false
-</code></p>
+<p>底下這段程式可以看到系統實際的狀況</p>
 
-<p>在重啟服務後，各團隊陸續回報功能已正常，但還是有一個問題回報，就是我們用來跟Jenkins做CI整合的Webhook還是壞的。</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">minWorkerThreads</span><span class="p">,</span> <span class="n">minIOCPThreads</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">logicCores</span> <span class="p">=</span> <span class="n">Environment</span><span class="p">.</span><span class="n">ProcessorCount</span><span class="p">;</span>
+    <span class="n">ThreadPool</span><span class="p">.</span><span class="nf">GetMinThreads</span><span class="p">(</span><span class="k">out</span> <span class="n">minWorkerThreads</span><span class="p">,</span> <span class="k">out</span> <span class="n">minIOCPThreads</span><span class="p">);</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"Cores: </span><span class="p">{</span><span class="n">logicCores</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"Minimum Worker threads: </span><span class="p">{</span><span class="n">minWorkerThreads</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"Minimum IOCP threads: </span><span class="p">{</span><span class="n">minIOCPThreads</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">Read</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
 
-<p>到GitLab的Webhook頁面按下Push測試，依然會出現500 ERROR的錯誤頁面，研判可能不是同一個問題(<code class="highlighter-rouge">後續解釋第一個問題時，就會知道為什麼我會判斷不是同一個問題</code>)，上網google了一下，原來是在10.5.6版時對Outbound Request新增了一個設定，用Admin的權限登入設定後，團隊回報功能正常，終於結束這個GitLab升級事件。</p>
+<p>這個設定值的意思是，如果目前的Busy Threads = MinThreads時，ThreadPool就會開始建立並注入新的可用thread到ThreadPool裡。</p>
 
-<h2 id="問題原因分析">問題原因分析</h2>
+<p>實際運行的時候，假設需要一個IOCP thread，而ThreadPool內有可用的thread，就會立刻配出去使用。但<strong><em>如果目前的Busy Threads = Min Threads，就會讓這個請求進入排隊等候，等待<code class="highlighter-rouge">500ms</code>後依然沒有可用的thread，就會注入一條新的thread給目前排隊的第一順位請求</em></strong>，而始終閒置的thread則在15秒後會被釋放。</p>
 
-<p>這次的主要問題是升級後的500 ERROR，雖然source code不用擔心會掉，但還是造成很大的不便。</p>
+<p>看到這邊有沒有發現問題了? 由於預設的最小Worker/IOCP threads不足以服務大量湧入的請求，就會需要等待500ms才能在ThreadPool拿到可用的thread，在這個狀況下很有機會因等待建立新thread而發生Timeout exception。</p>
 
-<p>根據GitLab的開發人員解釋，這個問題跟Docker有關係，然後我們剛好就是用官方的Omnibus Docker image建置GitLab。</p>
+<p>如果StackExchange.Redis是用在Web，則會使用IIS的預設值，基本上是沒什麼問題的，如果要自行控制得要修改machine.config。</p>
 
-<p>GitLab有一個Page功能，就像是GitHub的Page一樣，用來建置靜態網站，因為這功能會佔用較多磁碟空間，原本是用in-place的方式在Docker內部調用chroot掛載外部Volume</p>
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;processModel</span> <span class="na">autoConfig=</span><span class="s">"false"</span> <span class="na">minWorkerThreads=</span><span class="s">"50"</span> <span class="na">minIoThreads=</span><span class="s">"50"</span> <span class="nt">/&gt;</span>
+</code></pre></div></div>
 
-<p>在10.7.0改版後，改成用bind mounting的方式來掛載外部Volume，這對privileged container來說是比較方便的，但<strong>同時他們也移掉了舊版的in-place方式</strong></p>
+<p>若為Windows Service或其他非掛載於IIS的Service，就要注意ThreadPool.MinThreads是否有依實際的狀況調整適當的初始值。</p>
 
-<p>問題來了，我們用的官方Omnibus docker image是以Unprivileged 的方式發行，意味著裡面的user不具備外部環境的root權限，所以沒辦法在container內直接使用bind mounting的方式掛載外部的volume，只能用chroot</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">minWorkers</span> <span class="p">=</span> <span class="m">16</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">minIOCPs</span> <span class="p">=</span> <span class="m">16</span><span class="p">;</span>
+<span class="n">ThreadPool</span><span class="p">.</span><span class="nf">SetMinThreads</span><span class="p">(</span><span class="n">minWorkers</span><span class="p">,</span> <span class="n">minIOCPs</span><span class="p">);</span>
+</code></pre></div></div>
 
-<p>但因為我們其實沒有開啟GitLab Page的功能，所以直接在參數內關閉Page，繞過了這個issue</p>
+<p>這個狀況可以觀察幾個指標，首先看<code class="highlighter-rouge">IOCP</code>及<code class="highlighter-rouge">WORKER</code>裡的<code class="highlighter-rouge">Busy</code>與<code class="highlighter-rouge">Min</code>，如果<code class="highlighter-rouge">Busy</code>&gt;<code class="highlighter-rouge">Min</code>就表示有可能是ThreadPool的設定值並沒有為流量做最佳化。</p>
 
-<p>官方說這應該要變成一個新功能，提供一個設定值讓使用者決定要用新版的做法還是舊版的，然後default要用舊版的設定，承諾會在之後修正，但不會在10.7.1</p>
+<h2 id="large-requestresponse-size">Large Request/Response size</h2>
 
-<h2 id="回顧檢討">回顧檢討</h2>
+<p>實務上這個應該是最常遇到的，因為跟資料結構的設計有最直接的關係。</p>
 
-<p>其實之前一樣的版本升級也做過幾次，但第一次出現這麼嚴重的狀況，因此也暴露出了一些問題。</p>
+<p>假設Sync timeout設為1000，同時有2個request需要讀取Key A與Key B的value，因為StackExchange.Redis的Multiplexer機制是共用connection，當使用pipeline機制發出這2個request時會連續發送而不會等待前一個response，而Redis server則會依發送的順序，依序回傳Response。</p>
 
-<ul>
-  <li>現有的備份機制做的不太好，應該要有一個能手動進行備份的腳本</li>
-  <li>版本更新一次跳太多版，還挑了一個才發行5天的release</li>
-  <li>應該先確認各版本的已知issue後才決定要更新到哪一個版本</li>
-  <li>沒有環境驗證更新後的結果，等於是直接拿production開刀</li>
-</ul>
+<p>此時如果response的data size很大，傳輸的時間就有可能超過設定的time out時間，引發Timeout exception，如下圖所示：</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>|-------- 1 Second Timeout <span class="o">(</span>A<span class="o">)</span><span class="nt">----------</span>|
+|-Request A-|
+     |-------- 1 Second Timeout <span class="o">(</span>B<span class="o">)</span> <span class="nt">----------</span>|
+     |-Request B-|
+            |- Read Response A <span class="nt">--------</span>|
+                                       |- Read Response B-| <span class="o">(</span><span class="k">**</span>TIMEOUT<span class="k">**</span><span class="o">)</span>
+</code></pre></div></div>
+
+<p>這個狀況是Client讀取回傳的response A，這時request A + response A的時間還在1秒內，所以request A正常結束，但讀取Response B因為要等Response A讀取完成，這時request B的時間是要再<strong>加上等待讀取response A完成的時間</strong>，而不是只有加上讀取Response B的時間就好。</p>
+
+<p>這個data size的設計跟MTU有關。MTU是網卡的最大傳輸單元，Ethernet的預設值通常是1500 bytes，當超過這個值的時候就會被拆成不同的封包傳送，且若發生封包碰撞則必須重傳，這是TCP/IP的協議規範之一。</p>
+
+<p>Redis的value資料長度如果大於MTU，表示在TCP傳輸的時候要分成多個封包進行傳輸，不但會大幅降低Redis的throughput，大到一定程度後還會發生timeout exception。</p>
+
+<p>如果是屬於這個狀況，就要想辦法調整儲存的資料結構，把一個大的key/value拆成好幾個小的key/value，或以Hash的結構存放，個人的建議是儘可能的讓單個key/value可以小於1KB，以本人實測的結果，1KB的資料長度是throughput最高的。</p>
+
+<h2 id="commands-taking-long-time-to-process-on-redis-server">Commands taking long time to process on Redis server</h2>
+
+<p>最後一個狀況就是執行的指令在Redis跑的太久了，比如跑了一個寫的很爛的Lua script，或是下了會造成blocking的指令，如<code class="highlighter-rouge">MGET</code>，<code class="highlighter-rouge">KEYS</code>…等。</p>
+
+<p>這要連到Server上執行<code class="highlighter-rouge">slowlog</code>指令，列出執行效率低落的指令才能進行調校。</p>
+
+<p>這類型的問題比較有效的解決方式還是靠code review、pair programming跟training的方式，協助團隊內不熟悉Redis的工程師儘快熟悉，避免寫出不好的程式碼。</p>
+
+<h2 id="錯誤訊息代碼說明">錯誤訊息代碼說明</h2>
+
+<p>另外關於StackExchange.Redis的錯誤訊息，裡面有很多縮寫代碼，Microsoft Azure有整理了一份代碼的說明表格。</p>
+
+<p><a href="https://azure.microsoft.com/en-us/blog/investigating-timeout-exceptions-in-stackexchange-redis-for-azure-redis-cache/" target="_blank">StackExchange.Redis Timeout Exception Error Code</a></p>
+
+<h2 id="小結">小結</h2>
+
+<p>這篇算是C#存取Redis很重要的一個部份，很多人常會卡在timeout exception要如何處理，其實很多時候都是一些基礎知識，掌握好基礎後，處理這些問題就變的很輕鬆了。</p>
+
+<p>這篇原則上還是把範圍限縮在Client端，畢竟主題是講C#存取Redis，之後有機會再整理Server端的問題排查就會更全面了。</p>
 </div>
-				<footer><meta itemprop="dateModified" content="2018-04-27T00:00:00+08:00"><div class="article-license"><div class="m-license"><div class="clearfix"><a class="octocat" href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-04-27-GitLab-Upgrade-500-Error.md">
+				<footer><meta itemprop="dateModified" content="2018-05-20T00:00:00+08:00"><div class="article-license"><div class="m-license"><div class="clearfix"><a class="octocat" href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-05-20-Redis-Programming-CSharp-Basic-3.md">
         <img alt="View on Github" src="/assets/images/octocat.jpg" />
-      </a><p><a href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-04-27-GitLab-Upgrade-500-Error.md">在 Github 上查閱此文。</a></p><p>本文遵守 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> 許可協議。</p><a class="license" rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
+      </a><p><a href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-05-20-Redis-Programming-CSharp-Basic-3.md">在 Github 上查閱此文。</a></p><p>本文遵守 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> 許可協議。</p><a class="license" rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
       <img alt="Creative Commons License" src="/assets/images/license-cc4.png" />
     </a><p>歡迎轉載，轉載需註明出處，且禁止用於商業目的。</p>
   </div>
 </div></div>
 				</footer>
 			</article>
-			<div class="article-previous-next clearfix"><div class="article-previous"><span>上篇</span><a href="/2018/04/29/ASP-Net-Core-Redis-Cache.html">ASP.Net Core - DistributedRedisCache</a></div><div class="article-next"><span>下篇</span><a href="/2018/01/20/Agile-Scrum-Ceremonies-DailyScrum.html">學習敏捷系列 - Daily Scrum</a></div></div></div>
+			<div class="article-previous-next clearfix"><div class="article-previous"><span>上篇</span><a href="/2018/06/09/Master-Slave-Architecture-Design-and-Implementation.html">HA架構設計與實作 - Active Standby</a></div><div class="article-next"><span>下篇</span><a href="/2018/05/13/Redis-Programming-CSharp-Basic-2.html">Redis系列 - C#存取Redis (中)</a></div></div></div>
 	</div>
 </div></div>
       </div>

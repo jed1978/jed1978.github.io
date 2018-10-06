@@ -1,9 +1,9 @@
 <!DOCTYPE html><html lang="zh-Hant">
   <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>Upgrade GitLab from 10.3.3 to 10.7.1 - Jed's blog</title>
-<meta name="description" content="Gitlab 10.3.3 EE 更新 10.7.1 EE的問題升版失敗某同事在某一天星期五上午，提早到了公司，依原先的計畫要宰殺升級全部團隊共用的Gitlab Server到最新的10.7.1。他依照原本設計的SOP進行升級後，如沒有意外的話，這篇文章也就不會出現了…">
-<link rel="canonical" href="http://localhost:4000/2018/04/27/GitLab-Upgrade-500-Error.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>ASP.Net Core - DistributedRedisCache - Jed's blog</title>
+<meta name="description" content="ASP.Net Core - DistributedRedisCache前言在開發Web Application時，Redis是很常見的分散式快取服務，因此Microsoft也為了ASP.NET Core準備了Extension套件，只要在一開始的Startup.ConfigureService注入Distrib...">
+<link rel="canonical" href="http://localhost:4000/2018/04/29/ASP-Net-Core-Redis-Cache.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
 <!-- for Safari on iOS https://developer.apple.com/ios/human-interface-guidelines/icons-and-images/app-icon/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/images/logo/icon-180x180.png"><link rel="apple-touch-icon" sizes="167x167" href="/assets/images/logo/icon-167x167.png"><link rel="apple-touch-icon" sizes="152x152" href="/assets/images/logo/icon-152x152.png"><link rel="apple-touch-icon" sizes="120x120" href="/assets/images/logo/icon-120x120.png"><link rel="shortcut icon" href="/assets/images/logo/icon-120x120.png">
 <!-- for Chrome on Android https://developer.chrome.com/multidevice/android/installtohomescreen -->
 <meta name="mobile-web-app-capable" content="yes"><link rel="icon" sizes="192x192" href="/assets/images/logo/icon-192x192.png">
@@ -238,119 +238,189 @@
 		<div class="col-1">
 			<article class="js-article" itemscope itemtype="http://schema.org/BlogPosting">
 				<meta itemprop="mainEntityOfPage" itemscope itemType="https://schema.org/WebPage"/>
-				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">Upgrade GitLab from 10.3.3 to 10.7.1</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
-          <a class="pill-button" href="/all.html?tag=GitLab">GitLab</a>
+				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">ASP.Net Core - DistributedRedisCache</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=ASP.Net+Core">ASP.Net Core</a>
         </li><li>
-          <a class="pill-button" href="/all.html?tag=Upgrade">Upgrade</a>
+          <a class="pill-button" href="/all.html?tag=DistributedRedisCache">DistributedRedisCache</a>
         </li><li>
-          <a class="pill-button" href="/all.html?tag=Docker">Docker</a>
+          <a class="pill-button" href="/all.html?tag=Redis">Redis</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Cache">Cache</a>
         </li></ul><div class="other-wrapper"><div class="view-wrapper">
-        <span class="article-view" data-page-key="GitLab">0
+        <span class="article-view" data-page-key="NetCore">0
         </span> 閱讀
-      </div><div class="date-wrapper"><time class="article-meta" datetime="2018-04-27T00:00:00+08:00"
-          itemprop="datePublished">2018年 04月27日
+      </div><div class="date-wrapper"><time class="article-meta" datetime="2018-04-29T00:00:00+08:00"
+          itemprop="datePublished">2018年 04月29日
         </time></div>
   </div>
 </div>
 </header>
-				<div class="m-article-content js-article-content" itemprop="articleBody"><h1 id="gitlab-1033-ee-更新-1071-ee的問題">Gitlab 10.3.3 EE 更新 10.7.1 EE的問題</h1>
+				<div class="m-article-content js-article-content" itemprop="articleBody"><h1 id="aspnet-core---distributedrediscache">ASP.Net Core - DistributedRedisCache</h1>
 
-<h2 id="升版失敗">升版失敗</h2>
+<h2 id="前言">前言</h2>
 
-<p>某同事在某一天星期五上午，提早到了公司，依原先的計畫要<del>宰殺</del>升級全部團隊共用的Gitlab Server到最新的10.7.1。</p>
-
-<p>他依照原本設計的SOP進行升級後，如沒有意外的話，這篇文章也就不會出現了…
+<p>在開發Web Application時，Redis是很常見的分散式快取服務，因此Microsoft也為了ASP.NET Core準備了Extension套件，只要在一開始的Startup.ConfigureService注入DistributedRedisCache(細節可以參考我強者同事John Wu的<a href="https://blog.johnwu.cc/article/ironman-day20-asp-net-core-caching-redis-session.html" target="_blank">鐵人賽文章</a>)。
 <!--more--></p>
 
-<p>通訊群組內通知大家升級完成，期望的美好未來沒有發生，團隊陸續回報了下列問題</p>
+<h2 id="先講結論">先講結論</h2>
+
+<p>但是…這裡面其實藏了一個坑，如果只有單純的使用ASP.Net Core+DistributedRedisCache，那很可能不會發現，但如果你的系統架構還有使用到StackExchange.Redis或其他平台的Redis Library去存取相同的Redis，那就要特別注意了。</p>
+
+<p>DistributedRedisCache提供了SetStringAsync()與GetStringAsync()這2個method，對用習慣了StackExchange.Redis的老同學來說，一看到就很直覺的就會對應到IDatabase的StringSetAsync()與StringGetAsync()，問題在於…</p>
+
+<p><strong><em>DistributedRedisCache的實作是Hash!</em></strong></p>
+
+<p><strong><em>DistributedRedisCache的實作是Hash!</em></strong></p>
+
+<p><strong><em>DistributedRedisCache的實作是Hash!</em></strong></p>
+
+<p>很坑人所以講三遍，泥馬的為什麼用了Hash不說啊，這種命名方式真的會讓人搞混…</p>
+
+<h2 id="被坑到的讀寫分離">被坑到的讀寫分離</h2>
+
+<p>在稍具規模的系統應用Redis做為Cache時，更新Cache的策略就會依各種限制與需求去調整，特別是在讀寫分離的架構下，寫入Redis及讀出Redis會分別交給不同的服務執行。</p>
+
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Frontend
+    participant Redis
+    participant Backend
+    Frontend-&gt;&gt;Redis: read data
+    Redis--&gt;&gt;Frontend: response
+    Backend-&gt;&gt;Redis: write data
+</code></pre>
+
+<p>接下來我們直接實作一下這個架構，來看看為什麼Hash會造成問題</p>
+
+<h2 id="架構實作">架構實作</h2>
+
+<p>接下來的實作需要具備的基礎知識：</p>
 
 <ul>
-  <li>ssh: connect to host gitlab.xxxx.net port 8022: Connection refused</li>
-  <li>Internal 500 Error</li>
+  <li>開發環境已安裝好Docker及.Net Core 2.0</li>
+  <li>具備Docker的基礎知識及基本操作能力</li>
 </ul>
 
-<p>因為事態嚴重，全公司十多個團隊同時發生，所以趕快進行降版復原</p>
+<h3 id="建立redis">建立Redis</h3>
 
-<p>但這不是一個童話故事，惡夢並未在降版後就結束了，這是成人世界殘酷的現實…</p>
+<p>建立Redis最快的方式就是直接拉一個docker image下來run了，請開啟你的Command Line或Terminal，然後輸入這段指令：</p>
 
-<h2 id="降版失敗">降版失敗</h2>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker run <span class="nt">--name</span> MyRedisCache <span class="nt">-it</span> <span class="nt">-p</span> 6379:6369 redis</code></pre></figure>
 
-<p>降版後，回報的問題不見了，但取而代之的是AD驗證失敗</p>
+<p>這個指令會跑起來一個Redis官方的Docker container，接下來就能做為我們的Cache服務器</p>
 
-<p><code class="highlighter-rouge">
-Could not authenticate you from Ldapmain because "Pg::undefinedcolumn: error: column namespaces.deleted at does not exist line 1: ...s" where ("namespaces"."name" = 'jxxxx.xxxx' and "namespace... ^ : select 1 as one from "namespaces" where ("namespaces"."name" = 'jxxxx.xxxx' and "namespaces"."deleted at" is null and "namespaces"."id" != xx and "namespaces"."parent id" is null) limit 1".
-</code></p>
+<h3 id="建立backend">建立Backend</h3>
 
-<p>對，降版失敗! 雖然同事在升級前有備份完整的設定檔，但還原後確發生了其他的問題，懷疑是Gitlab內部在某一版後變更了DB的schema。 由於狀況愈來愈嚴重，跟執行更新的同事討論後，決定再次升級回10.7.1，讓所有團隊可以先建置要部署到QAT的package。</p>
+<p>請建立一個Console的project，從NuGet加入<code class="highlighter-rouge">StackExchange.Redis</code>，然後在<code class="highlighter-rouge">Programs.cs</code>加入以下程式碼</p>
 
-<p>開弓沒有回頭路，我們只能嘗試看看能不能找到解決方法。</p>
+<figure class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">mux</span> <span class="p">=</span> <span class="n">ConnectionMultiplexer</span><span class="p">.</span><span class="nf">Connect</span><span class="p">(</span><span class="s">"localhost"</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">db</span> <span class="p">=</span> <span class="n">mux</span><span class="p">.</span><span class="nf">GetDatabase</span><span class="p">();</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">DateTime</span><span class="p">.</span><span class="n">Now</span><span class="p">.</span><span class="nf">ToString</span><span class="p">(</span><span class="s">"yyyy-MM-dd HH:mm:ss"</span><span class="p">)}</span><span class="s">: Redis connection is established."</span><span class="p">);</span>
 
-<h2 id="問題排查">問題排查</h2>
+    <span class="kt">var</span> <span class="n">key</span> <span class="p">=</span> <span class="s">"MyCache:foo"</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="k">value</span> <span class="p">=</span> <span class="s">"shared cache data"</span><span class="p">;</span>
 
-<p>回到10.7.1後，一開始團隊回報正常，原本以為人品爆發，GitLab恢復正常了，但沒多久開始有人回報這個錯誤</p>
+    <span class="n">db</span><span class="p">.</span><span class="nf">StringSet</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="k">value</span><span class="p">);</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">DateTime</span><span class="p">.</span><span class="n">Now</span><span class="p">.</span><span class="nf">ToString</span><span class="p">(</span><span class="s">"yyyy-MM-dd HH:mm:ss"</span><span class="p">)}</span><span class="s">: StringSet: key:</span><span class="p">{</span><span class="n">key</span><span class="p">}</span><span class="s">, value:</span><span class="p">{</span><span class="k">value</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">"Press any key to continue..."</span><span class="p">);</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">Read</span><span class="p">();</span>
+<span class="p">}</span></code></pre></figure>
 
-<p><code class="highlighter-rouge">
-fatal: The remote end hung up unexpectedly
-error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500 Internal Server Error
-</code></p>
+<p>這支小程式負責模擬Backend，寫入Frontend需要的<code class="highlighter-rouge">MyCache:foo</code>到Redis Cache中</p>
 
-<p>接下來沒多久，Internal 500 ERROR也跟著出現，嘗試著重啟服務後又正常一陣子，但約20分鐘後這個狀況就會重覆發生。我們開始逐一清查可疑的部份，這段期間就委曲團隊只能用20分鐘，然後重啟服務。</p>
+<h3 id="建立frontend">建立Frontend</h3>
 
-<p>在檢查了很多部份後，注意到一個錯誤訊息非常可疑</p>
+<p>請建立一個ASP.Net Core Web MVC的專案</p>
 
-<p><code class="highlighter-rouge">
-time="2018-04-27T07:42:48Z" level=fatal error="Failed to bind mount /var/opt/gitlab/gitlab-rails/shared/pages on /tmp/gitlab-pages-1524814968737227221/pages. operation not permitted"
-</code></p>
+<p>在<code class="highlighter-rouge">Startup.cs</code>註冊<code class="highlighter-rouge">DistributedRedisCache</code></p>
 
-<p>我查了一下GitLab官方的issue列表，發現在5天前有人在10.7.0回報這個<a href="https://gitlab.com/gitlab-org/gitlab-pages/issues/129">issue</a>，我仔細的讀了整個討論串，確定這個issue在10.7.1並未被修正，也有其他網友提出了workaround，就是把GitLab Page先disabled。</p>
+<figure class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">services</span><span class="p">.</span><span class="nf">AddMvc</span><span class="p">();</span>
+    <span class="n">services</span><span class="p">.</span><span class="nf">AddDistributedRedisCache</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="n">options</span><span class="p">.</span><span class="n">Configuration</span> <span class="p">=</span> <span class="s">"127.0.0.1:6379"</span><span class="p">;</span>
+    <span class="p">});</span>
+<span class="p">}</span></code></pre></figure>
 
-<p>剛好我們之前在建置GitLab時也沒有用到這個功能，所以趕緊在gitlab.rb將Page關閉，然後重啟服務。</p>
+<p>接下來在<code class="highlighter-rouge">HomeController.cs</code>注入<code class="highlighter-rouge">DistributedRedisCache</code>，並讀取從Backend寫入的<code class="highlighter-rouge">MyCache:foo</code></p>
 
-<p><code class="highlighter-rouge">
-gitlab_pages['enable'] = false
-</code></p>
+<figure class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="k">readonly</span> <span class="n">IDistributedCache</span> <span class="n">cache</span><span class="p">;</span>
+<span class="k">public</span> <span class="nf">HomeController</span><span class="p">(</span><span class="n">IDistributedCache</span> <span class="n">cache</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="n">cache</span> <span class="p">=</span> <span class="n">cache</span><span class="p">;</span>
+<span class="p">}</span>
 
-<p>在重啟服務後，各團隊陸續回報功能已正常，但還是有一個問題回報，就是我們用來跟Jenkins做CI整合的Webhook還是壞的。</p>
+<span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Index</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="k">value</span> <span class="p">=</span> <span class="n">cache</span><span class="p">.</span><span class="nf">GetString</span><span class="p">(</span><span class="s">"MyCache:foo"</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nf">View</span><span class="p">();</span>
+<span class="p">}</span></code></pre></figure>
 
-<p>到GitLab的Webhook頁面按下Push測試，依然會出現500 ERROR的錯誤頁面，研判可能不是同一個問題(<code class="highlighter-rouge">後續解釋第一個問題時，就會知道為什麼我會判斷不是同一個問題</code>)，上網google了一下，原來是在10.5.6版時對Outbound Request新增了一個設定，用Admin的權限登入設定後，團隊回報功能正常，終於結束這個GitLab升級事件。</p>
+<p>先執行Backend把<code class="highlighter-rouge">MyCache:foo</code>寫入Redis後，再執行Frontend，然後…</p>
 
-<h2 id="問題原因分析">問題原因分析</h2>
+<p>就會出錯了…XD</p>
 
-<p>這次的主要問題是升級後的500 ERROR，雖然source code不用擔心會掉，但還是造成很大的不便。</p>
+<h3 id="發生錯誤">發生錯誤</h3>
 
-<p>根據GitLab的開發人員解釋，這個問題跟Docker有關係，然後我們剛好就是用官方的Omnibus Docker image建置GitLab。</p>
+<p><img src="https://cdn.rawgit.com/jed1978/blog-images/d0b969c4/Error-WRONGTYPE.jpeg" alt="" /></p>
 
-<p>GitLab有一個Page功能，就像是GitHub的Page一樣，用來建置靜態網站，因為這功能會佔用較多磁碟空間，原本是用in-place的方式在Docker內部調用chroot掛載外部Volume</p>
+<p>從這個錯誤訊息，我們可以得知這是因為沒有使用正確對應的指令去存取Redis，我們直接寫一筆到Redis來看一下好了</p>
 
-<p>在10.7.0改版後，改成用bind mounting的方式來掛載外部Volume，這對privileged container來說是比較方便的，但<strong>同時他們也移掉了舊版的in-place方式</strong></p>
+<p>改寫<code class="highlighter-rouge">HomeController.cs</code>的<code class="highlighter-rouge">Index()</code></p>
 
-<p>問題來了，我們用的官方Omnibus docker image是以Unprivileged 的方式發行，意味著裡面的user不具備外部環境的root權限，所以沒辦法在container內直接使用bind mounting的方式掛載外部的volume，只能用chroot</p>
+<figure class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="k">public</span> <span class="n">IActionResult</span> <span class="nf">Index</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="k">value</span> <span class="p">=</span> <span class="n">cache</span><span class="p">.</span><span class="nf">SetString</span><span class="p">(</span><span class="s">"MyCache:test"</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nf">View</span><span class="p">();</span>
+<span class="p">}</span></code></pre></figure>
 
-<p>但因為我們其實沒有開啟GitLab Page的功能，所以直接在參數內關閉Page，繞過了這個issue</p>
+<p>然後開啟另一個Terminal，輸入下列指令叫用Redis-cli檢查Redis內存放的<code class="highlighter-rouge">MyCache:test</code></p>
 
-<p>官方說這應該要變成一個新功能，提供一個設定值讓使用者決定要用新版的做法還是舊版的，然後default要用舊版的設定，承諾會在之後修正，但不會在10.7.1</p>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker run <span class="nt">-it</span> <span class="nt">--link</span> MyRedisCache:redis <span class="nt">--rm</span> redis redis-cli <span class="nt">-h</span> redis <span class="nt">-p</span> 6379</code></pre></figure>
 
-<h2 id="回顧檢討">回顧檢討</h2>
+<p>輸入type <code class="highlighter-rouge">MyCache:test</code>後，如圖所示，我們可以看到這個key的type是hash</p>
 
-<p>其實之前一樣的版本升級也做過幾次，但第一次出現這麼嚴重的狀況，因此也暴露出了一些問題。</p>
+<p><img src="https://cdn.rawgit.com/jed1978/blog-images/57130655/redis-type.jpeg" alt="" /></p>
 
-<ul>
-  <li>現有的備份機制做的不太好，應該要有一個能手動進行備份的腳本</li>
-  <li>版本更新一次跳太多版，還挑了一個才發行5天的release</li>
-  <li>應該先確認各版本的已知issue後才決定要更新到哪一個版本</li>
-  <li>沒有環境驗證更新後的結果，等於是直接拿production開刀</li>
-</ul>
+<h3 id="檢查原始碼">檢查原始碼</h3>
+
+<p>再來看一下Github上的原始碼，看到這個Lua script就瞭了，真的是Hash啊! 因此在方便使用之餘，還是要特別注意這個API命名上不一致的問題，否則在混合其他平台或在ASP.Net Core使用了多種方式存取Redis時，就會遇到很意外的錯誤。</p>
+
+<figure class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="c1">// KEYS[1] = = key</span>
+<span class="c1">// ARGV[1] = absolute-expiration - ticks as long (-1 for none)</span>
+<span class="c1">// ARGV[2] = sliding-expiration - ticks as long (-1 for none)</span>
+<span class="c1">// ARGV[3] = relative-expiration (long, in seconds, -1 for none) - Min(absolute-expiration - Now, sliding-expiration)</span>
+<span class="c1">// ARGV[4] = data - byte[]</span>
+<span class="c1">// this order should not change LUA script depends on it</span>
+<span class="k">private</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">SetScript</span> <span class="p">=</span> <span class="p">(</span><span class="s">@"
+        redis.call('HMSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
+        if ARGV[3] ~= '-1' then
+            redis.call('EXPIRE', KEYS[1], ARGV[3])
+        end
+        return 1"</span><span class="p">);</span></code></pre></figure>
+
+<p><a href="https://github.com/aspnet/Caching/blob/dev/src/Microsoft.Extensions.Caching.Redis/RedisCache.cs">DistributedRedisCache 原始碼連結</a>{target:”_blank”}</p>
+
+<h2 id="結論">結論</h2>
+
+<p>個人覺得這真的是一個未依慣例命名造成的認知問題，如果Method改名成HashGet, HashSet，這篇文章應該就不會存在了。</p>
+
+<p>此外，如果真的要應用在比較具規模的系統，我應該不會選用DistributedRedisCache，而是針對需求另外設計一個介面去包住StackExchange.Redis</p>
+
+<p>原因並不是我愛造新輪子，而是這個內建的元件並無法完全發揮Redis的能力，用在小型系統應該問題不大，但在讀寫分離的場景或是混合架構時，先天的限制就會很明顯了。</p>
 </div>
-				<footer><meta itemprop="dateModified" content="2018-04-27T00:00:00+08:00"><div class="article-license"><div class="m-license"><div class="clearfix"><a class="octocat" href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-04-27-GitLab-Upgrade-500-Error.md">
+				<footer><meta itemprop="dateModified" content="2018-04-29T00:00:00+08:00"><div class="article-license"><div class="m-license"><div class="clearfix"><a class="octocat" href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-04-29-ASP-Net-Core-Redis-Cache.md">
         <img alt="View on Github" src="/assets/images/octocat.jpg" />
-      </a><p><a href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-04-27-GitLab-Upgrade-500-Error.md">在 Github 上查閱此文。</a></p><p>本文遵守 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> 許可協議。</p><a class="license" rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
+      </a><p><a href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-04-29-ASP-Net-Core-Redis-Cache.md">在 Github 上查閱此文。</a></p><p>本文遵守 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> 許可協議。</p><a class="license" rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
       <img alt="Creative Commons License" src="/assets/images/license-cc4.png" />
     </a><p>歡迎轉載，轉載需註明出處，且禁止用於商業目的。</p>
   </div>
 </div></div>
 				</footer>
 			</article>
-			<div class="article-previous-next clearfix"><div class="article-previous"><span>上篇</span><a href="/2018/04/29/ASP-Net-Core-Redis-Cache.html">ASP.Net Core - DistributedRedisCache</a></div><div class="article-next"><span>下篇</span><a href="/2018/01/20/Agile-Scrum-Ceremonies-DailyScrum.html">學習敏捷系列 - Daily Scrum</a></div></div></div>
+			<div class="article-previous-next clearfix"><div class="article-previous"><span>上篇</span><a href="/2018/05/02/Redis-Environment-Installation-Configuration.html">Redis系列 - 環境建置篇</a></div><div class="article-next"><span>下篇</span><a href="/2018/04/27/GitLab-Upgrade-500-Error.html">Upgrade GitLab from 10.3.3 to 10.7.1</a></div></div></div>
 	</div>
 </div></div>
       </div>

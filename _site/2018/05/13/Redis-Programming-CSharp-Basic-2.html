@@ -1,0 +1,864 @@
+<!DOCTYPE html><html lang="zh-Hant">
+  <head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>Redis系列 - C#存取Redis (中) - Jed's blog</title>
+<meta name="description" content="C#存取Redis延續上一篇Redis系列 - C#存取Redis (上)，這篇文章會說明Redis的簡易Publish/Subscribe、Lua script的基礎知識。PUBLISH/SUBSCRIBERedis的PUB/SUB是很簡易的訊息機制，並不像一些專門的Message Middleware(例如R...">
+<link rel="canonical" href="http://localhost:4000/2018/05/13/Redis-Programming-CSharp-Basic-2.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
+<!-- for Safari on iOS https://developer.apple.com/ios/human-interface-guidelines/icons-and-images/app-icon/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/images/logo/icon-180x180.png"><link rel="apple-touch-icon" sizes="167x167" href="/assets/images/logo/icon-167x167.png"><link rel="apple-touch-icon" sizes="152x152" href="/assets/images/logo/icon-152x152.png"><link rel="apple-touch-icon" sizes="120x120" href="/assets/images/logo/icon-120x120.png"><link rel="shortcut icon" href="/assets/images/logo/icon-120x120.png">
+<!-- for Chrome on Android https://developer.chrome.com/multidevice/android/installtohomescreen -->
+<meta name="mobile-web-app-capable" content="yes"><link rel="icon" sizes="192x192" href="/assets/images/logo/icon-192x192.png">
+<!-- for Edge on Windows 10 https://msdn.microsoft.com/en-us/library/dn255024(v=vs.85).aspx --><meta name="msapplication-TileImage" content="/assets/images/logo/icon-144x144.png"><meta name="msapplication-square310x310logo" content="/assets/images/logo/icon-310x310.png"><meta name="msapplication-wide310x150logo" content="/assets/images/logo/icon-310x150.png"><meta name="msapplication-square150x150logo" content="/assets/images/logo/icon-150x150.png"><meta name="msapplication-square70x70logo" content="/assets/images/logo/icon-70x70.png">
+<meta name="msapplication-TileColor" content="#eeeeee">
+<link rel="stylesheet" href="/assets/css/blog.css">
+    <script>(function() {
+  var Set = (function() {
+    var add = function(item) {
+      var i, data = this._data;
+      for (i = 0; i < data.length; i++) {
+        if (data[i] === item) {
+          return;
+        }
+      }
+      this.size ++;
+      data.push(item);
+      return data;
+    };
+
+    var Set = function(data) {
+      this.size = 0;
+      this._data = [];
+      var i;
+      if (data.length > 0) {
+        for (i = 0; i < data.length; i++) {
+          add.call(this, data[i]);
+        }
+      }
+    };
+    Set.prototype.add = add;
+    Set.prototype.get = function(index) { return this._data[index]; };
+    Set.prototype.has = function(item) {
+      var i, data = this._data;
+      for (i = 0; i < data.length; i++) {
+        if (this.get(i) === item) {
+          return true;
+        }
+      }
+      return false;
+    };
+    Set.prototype.is = function(map) {
+      if (map._data.length !== this._data.length) { return false; }
+      var i, j, flag, tData = this._data, mData = map._data;
+      for (i = 0; i < tData.length; i++) {
+        for (flag = false, j = 0; j < mData.length; j++) {
+          if (tData[i] === mData[j]) {
+            flag = true;
+            break;
+          }
+        }
+        if (!flag) { return false; }
+      }
+      return true;
+    };
+    Set.prototype.values = function() {
+      return this._data;
+    };
+    return Set;
+  })();
+  window.isArray = function(val) {
+    return Object.prototype.toString.call(val) === '[object Array]';
+  };
+  window.isString = function(val) {
+    return typeof val === 'string';
+  };
+  window.Lazyload = (function(doc) {
+    var queue = {js: [], css: []}, sources = {js: {}, css: {}}, context = this;
+    var createNode = function(name, attrs) {
+      var node = doc.createElement(name), attr;
+      for (attr in attrs) {
+        if (attrs.hasOwnProperty(attr)) {
+          node.setAttribute(attr, attrs[attr]);
+        }
+      }
+      return node;
+    };
+    var end = function(type, url) {
+      var s, q, qi, cbs, i, j, cur, val, flag;
+      if (type === 'js' || type ==='css') {
+        s = sources[type], q = queue[type];
+        s[url] = true;
+        for (i = 0; i < q.length; i++) {
+          cur = q[i];
+          if (cur.urls.has(url)) {
+            qi = cur, val = qi.urls.values();
+            qi && (cbs = qi.callbacks);
+            for (flag = true, j = 0; j < val.length; j++) {
+              cur = val[j];
+              if (!s[cur]) {
+                flag = false;
+              }
+            }
+            if (flag && cbs && cbs.length > 0) {
+              for (j = 0; j < cbs.length; j++) {
+                cbs[j].call(context);
+              }
+              qi.load = true;
+            }
+          }
+        }
+      }
+    };
+    var load = function(type, urls, callback) {
+      var s, q, qi, node, i, cur,
+        _urls = typeof urls === 'string' ? new Set([urls]) : new Set(urls), val, url;
+      if (type === 'js' || type ==='css') {
+        s = sources[type], q = queue[type];
+        for (i = 0; i < q.length; i++) {
+          cur = q[i];
+          if (_urls.is(cur.urls)) {
+            qi = cur;
+            break;
+          }
+        }
+        val = _urls.values();
+        if (qi) {
+          callback && (qi.load || qi.callbacks.push(callback));
+          callback && (qi.load && callback());
+        } else {
+          q.push({
+            urls: _urls,
+            callbacks: callback ? [callback] : [],
+            load: false
+          });
+          for (i = 0; i < val.length; i++) {
+            node = null, url = val[i];
+            if (s[url] === undefined) {
+              (type === 'js' ) && (node = createNode('script', { src: url }));
+              (type === 'css') && (node = createNode('link', { rel: 'stylesheet', href: url }));
+              if (node) {
+                node.onload = (function(type, url) {
+                  return function() {
+                    end(type, url);
+                  };
+                })(type, url);
+                (doc.head || doc.body).appendChild(node);
+                s[url] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+    return {
+      js: function(url, callback) {
+        load('js', url, callback);
+      },
+      css: function(url, callback) {
+        load('css', url, callback);
+      }
+    };
+  })(this.document);
+
+  window.throttle = function(func, wait) {
+    var args, result, thisArg, timeoutId, lastCalled = 0;
+
+    function trailingCall() {
+      lastCalled = new Date;
+      timeoutId = null;
+      result = func.apply(thisArg, args);
+    }
+    return function() {
+      var now = new Date,
+        remaining = wait - (now - lastCalled);
+
+      args = arguments;
+      thisArg = this;
+
+      if (remaining <= 0) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+        lastCalled = now;
+        result = func.apply(thisArg, args);
+      } else if (!timeoutId) {
+        timeoutId = setTimeout(trailingCall, remaining);
+      }
+      return result;
+    };
+  };
+
+  window.decodeUrl = function(str) {
+    return str ? decodeURIComponent(str.replace(/\+/g, '%20')) : '';
+  };
+
+  window.hasEvent = function(event) {
+    return 'on'.concat(event) in window.document;
+  };
+
+  window.pageLoad = (function () {
+    var loaded = false, cbs = [];
+    window.addEventListener('load', function () {
+      var i, cb; loaded = true;
+      if (cbs.length > 0) {
+        for (i = 0; i < cbs.length; i++) {
+          cb = cbs[i]; cb();
+        }
+      }
+    });
+    return {
+      then: function(cb) {
+        cb && (loaded ? cb() : (cbs.push(cb)));
+      }
+    };
+  })();
+})();</script>
+  </head>
+  <body>
+    <div class="m-page-stage js-page-stage">
+      <div class="m-page-content"><header class="m-page-header">
+  <div class="main clearfix">
+    <div class='site-logo'><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="24px" height="24px" viewBox="0 0 24 24">
+<style type="text/css">
+	.st0{fill:#666666;}
+</style>
+<path class="st0" d="M1.7,22.3c5.7-5.7,11.3-5.7,17,0c3.3-3.3,3.5-5.3,0.8-6c2.7,0.7,3.5-1.1,2.3-5.6s-3.3-5.2-6.3-2.1
+	c3-3,2.3-5.2-2.1-6.3S7,1.8,7.7,4.6C7,1.8,5,2.1,1.7,5.3C7.3,11,7.3,16.7,1.7,22.3"/>
+</svg><a title="寫程式是一件快樂的事，期許自己可以一輩子都能享受這種快樂
+" href="/">Jed's blog</a></div>
+    <nav>
+      <ul><li><a href="/">主頁</a></li><li><a href="/all.html">歸檔</a></li><li><a href="/about.html">關於</a></li><li><a type="application/rss+xml" href="/feed.xml">RSS</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<div class="m-page-main"><div class="m-post">
+	<div class="main clearfix js-main">
+		<div class="col-2 js-col-2">
+			<aside class="js-article-aside"><div class="m-toc js-toc"></div></aside>
+		</div>
+		<div class="col-1">
+			<article class="js-article" itemscope itemtype="http://schema.org/BlogPosting">
+				<meta itemprop="mainEntityOfPage" itemscope itemType="https://schema.org/WebPage"/>
+				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">Redis系列 - C#存取Redis (中)</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=Redis">Redis</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=C%23">C#</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=StackExchange.Redis">StackExchange.Redis</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Pub%2FSub">Pub/Sub</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Lua+Script">Lua Script</a>
+        </li></ul><div class="other-wrapper"><div class="view-wrapper">
+        <span class="article-view" data-page-key="Redis-Programming-CSharp-Basic-2">0
+        </span> 閱讀
+      </div><div class="date-wrapper"><time class="article-meta" datetime="2018-05-13T00:00:00+08:00"
+          itemprop="datePublished">2018年 05月13日
+        </time></div>
+  </div>
+</div>
+</header>
+				<div class="m-article-content js-article-content" itemprop="articleBody"><h1 id="c存取redis">C#存取Redis</h1>
+
+<p>延續上一篇<a href="/2018/05/11/Redis-Programming-CSharp-Basic-1.html">Redis系列 - C#存取Redis (上)</a>，這篇文章會說明Redis的簡易Publish/Subscribe、Lua script的基礎知識。</p>
+
+<h2 id="publishsubscribe">PUBLISH/SUBSCRIBE</h2>
+
+<p>Redis的PUB/SUB是很簡易的訊息機制，並不像一些專門的Message Middleware(例如RabbitMQ、ActiveMQ)提供很多豐富的功能，比如它就不保證訊息發送後一定不會遺失，但因為附帶的這個功能實在太方便了，實務上還是經常使用到。</p>
+
+<!--more-->
+<p>StackExchange.Redis對PUB/SUB的支援很完整，範例程式碼如下</p>
+
+<p><strong><em><code class="highlighter-rouge">RedisConnection</code>的程式碼請參考<a href="/2018/05/11/Redis-Programming-CSharp-Basic-1.html">Redis系列 - C#存取Redis (上)</a></em></strong></p>
+
+<h3 id="stackexchangeredis-pubsub-範例程式碼">StackExchange.Redis PUB/SUB 範例程式碼</h3>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">RedisConnection</span><span class="p">.</span><span class="nf">Init</span><span class="p">(</span><span class="s">"localhost:6379"</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">redis</span> <span class="p">=</span> <span class="n">RedisConnection</span><span class="p">.</span><span class="n">Instance</span><span class="p">.</span><span class="n">ConnectionMultiplexer</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">db</span> <span class="p">=</span> <span class="n">redis</span><span class="p">.</span><span class="nf">GetDatabase</span><span class="p">(</span><span class="m">0</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">sub</span> <span class="p">=</span> <span class="n">redis</span><span class="p">.</span><span class="nf">GetSubscriber</span><span class="p">();</span>
+<span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">DateTime</span><span class="p">.</span><span class="n">Now</span><span class="p">.</span><span class="nf">ToString</span><span class="p">(</span><span class="s">"yyyy-MM-dd hh:mm:ss.fff"</span><span class="p">)}</span><span class="s"> - Subscribed channel topic.test "</span><span class="p">);</span>
+<span class="n">sub</span><span class="p">.</span><span class="nf">Subscribe</span><span class="p">(</span><span class="s">"topic.test"</span><span class="p">,</span> <span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">DateTime</span><span class="p">.</span><span class="n">Now</span><span class="p">.</span><span class="nf">ToString</span><span class="p">(</span><span class="s">"yyyy-MM-dd hh:mm:ss.fff"</span><span class="p">)}</span><span class="s"> - Received message </span><span class="p">{</span><span class="n">message</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="n">redis</span><span class="p">.</span><span class="nf">GetDatabase</span><span class="p">().</span><span class="nf">Publish</span><span class="p">(</span><span class="s">"topic.test"</span><span class="p">,</span> <span class="s">"Hello World!"</span><span class="p">);</span>
+<span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">DateTime</span><span class="p">.</span><span class="n">Now</span><span class="p">.</span><span class="nf">ToString</span><span class="p">(</span><span class="s">"yyyy-MM-dd hh:mm:ss.fff"</span><span class="p">)}</span><span class="s"> - Published message to channel topic.test"</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><strong>執行結果:</strong>
+<img src="/assets/images/pub-sub-screenshot-1.jpg" alt="Pub/Sub result" /></p>
+
+<h3 id="pubsub的實作結構特性">PUB/SUB的實作結構特性</h3>
+
+<p>使用Redis的PUB/SUB要注意幾件事，同樣的Channel如果不先呼叫<code class="highlighter-rouge">Unsubscribe()</code>就呼叫<code class="highlighter-rouge">Subscribe()</code>，每Publish一次就會收到重覆的message。</p>
+
+<p>這是因為Channel在Redis的實作上是一個Dictionary的結構，Key值是Channel，Value是一個Linked List，這個Linked List存的是有訂閱這個Channel的Client Id，因此每呼叫一次<code class="highlighter-rouge">Subscribe()</code>，就會往這個Linked List增加一個Client Id。</p>
+
+<pre><code class="language-mermaid">graph LR
+    subgraph channel
+        A(topic.test.1)--&gt;B
+        subgraph linked clients
+            B--&gt;B1
+            B1--&gt;B2
+            B2--&gt;B3
+        end
+        C(topic.test.2)--&gt;D
+        subgraph linked clients
+            D--&gt;D1
+            D1--&gt;D2
+            D2--&gt;D3
+        end
+    end
+</code></pre>
+
+<p>由於使用Linked List的關係，訊息傳遞的時間複雜度是O(N)，如果同一個Channel有很多個Subscriber，排愈後面的Subscriber就會愈慢收到，但這個問題可以用多個Channel來解決。</p>
+
+<h3 id="非同步的訊息順序問題">非同步的訊息順序問題</h3>
+
+<p>另外StackExchange.Redis預設也提供了<code class="highlighter-rouge">Publish()</code>與<code class="highlighter-rouge">PublishAsync()</code>，但實際呼叫時會發現結果似乎是一樣的</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="m">10</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span>
+<span class="p">{</span>
+    <span class="n">redis</span><span class="p">.</span><span class="nf">GetDatabase</span><span class="p">().</span><span class="nf">PublishAsync</span><span class="p">(</span><span class="s">"topic.test"</span><span class="p">,</span> <span class="s">$"</span><span class="p">{</span><span class="n">i</span><span class="p">}</span><span class="s"> Hello World!"</span><span class="p">);</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">DateTime</span><span class="p">.</span><span class="n">Now</span><span class="p">.</span><span class="nf">ToString</span><span class="p">(</span><span class="s">"yyyy-MM-dd hh:mm:ss.fff"</span><span class="p">)}</span><span class="s"> - Published message to channel topic.test"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>執行結果:</strong>
+<img src="/assets/images/pub-sub-screenshot-2.jpg" alt="Pub Async result" /></p>
+
+<p>這是因為StackExchange.Redis預設是讓訊息的發送與接收在同一個Connection維持一致的順序，這像是queue的概念，這樣做的好處是有利於簡化訊息的處理順序問題，但缺點是必須一個一個的發送與接收，如果訊息量較大時，就會造成delay。</p>
+
+<p>因此若不需要關心每個訊息的處理順序，可以調整一個設定值，讓<code class="highlighter-rouge">PublishAsync()</code>發揮非同步的能力</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">redis</span><span class="p">.</span><span class="n">PreserveAsyncOrder</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="m">10</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span>
+<span class="p">{</span>
+    <span class="n">redis</span><span class="p">.</span><span class="nf">GetDatabase</span><span class="p">().</span><span class="nf">PublishAsync</span><span class="p">(</span><span class="s">"topic.test"</span><span class="p">,</span> <span class="s">$"</span><span class="p">{</span><span class="n">i</span><span class="p">}</span><span class="s"> Hello World!"</span><span class="p">);</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">DateTime</span><span class="p">.</span><span class="n">Now</span><span class="p">.</span><span class="nf">ToString</span><span class="p">(</span><span class="s">"yyyy-MM-dd hh:mm:ss.fff"</span><span class="p">)}</span><span class="s"> - Published message to channel topic.test"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>執行結果:</strong>
+<img src="/assets/images/pub-sub-async-screenshot.jpg" alt="Pub Async result 2" /></p>
+
+<p>不限制非同步訊息的順序，會提昇訊息處理的Throughput，但就要自己控制訊息對系統狀態的影響。</p>
+
+<h3 id="output-buffer-hard-limitsoft-limit對pubsub的影響">Output buffer Hard limit/Soft limit對PUB/SUB的影響</h3>
+
+<p>最後還有一個Pub/Sub的坑要特別提一下，在使用Pub/Sub時，如果Publisher的發送量大於Subscriber的消化速度的話，會有機會被Redis關閉client端的連線。</p>
+
+<p>Redis對每一個連上來的client端都有一個output buffer的設定，這是因為Redis的In-memory處理速度太快，而Network的I/O處理太慢，因此需要一個緩衝區讓Redis處理完請求後先將結果放進去，就可以繼續處理下一個請求。</p>
+
+<p>Output buffer分成三種，預設值如下:</p>
+
+<div class="language-conf highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">client</span>-<span class="n">output</span>-<span class="n">buffer</span>-<span class="n">limit</span> <span class="n">normal</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span>
+<span class="n">client</span>-<span class="n">output</span>-<span class="n">buffer</span>-<span class="n">limit</span> <span class="n">slave</span> <span class="m">256</span><span class="n">mb</span> <span class="m">64</span><span class="n">mb</span> <span class="m">60</span>
+<span class="n">client</span>-<span class="n">output</span>-<span class="n">buffer</span>-<span class="n">limit</span> <span class="n">pubsub</span> <span class="m">32</span><span class="n">mb</span> <span class="m">8</span><span class="n">mb</span> <span class="m">60</span>
+</code></pre></div></div>
+
+<p>可以看到pubsub有特別獨立出來一個設定值，其中的32mb是<code class="highlighter-rouge">hard limit</code>，8mb是<code class="highlighter-rouge">soft limit</code>，60是soft limit的時間限制。這個設定值的意思是如果pubsub的訊息大於32mb時，Redis會立刻關閉該client的連線，8mb與60是指如果達到8mb且超過60s，就會關閉該client的連線。</p>
+
+<h2 id="lua-script">Lua script</h2>
+
+<p>Redis在2.6版就加入了對Lua script的支援，Lua script是一種非常簡單的腳本語言，被廣泛的用在很多軟體內做為內嵌語言，遊戲引擎內就很常看到它的出現。</p>
+
+<p>使用Lua script的好壞處都很明顯，個人覺得是有些兩面刃的味道，用的好可以完全發揮Redis的優點，用不好也可以徹底搞死Redis…。</p>
+
+<h3 id="適用場景">適用場景</h3>
+
+<p>還是要回到Redis的架構設計來看，因為單執行緒的設計，在運行Lua script的時候是沒辦法處理其他的請求的，所以Lua script並不能像Database的Stored Procedure一樣運行複雜的商務邏輯，它適用的場景是：</p>
+
+<ul>
+  <li>組合出Redis沒有支援的command</li>
+  <li>Atomic的資料操作</li>
+  <li>Transaction</li>
+  <li>避免多次請求來回浪費掉的round-trip network latency</li>
+</ul>
+
+<p>蠻多工程師一開始接觸Redis並不清楚這個部份，發現Lua script的一些優點後，就會把Lua script當成DB的SQL在用，寫了一堆Lua script像是在寫stored procedure，放了很多複雜的商業邏輯在內，在開發環境可能還不會遇到問題，但在上到正式環境後就陸續發生一大堆效能問題，這時要再緊急上的Patch就很容易出現其他的bug。</p>
+
+<h3 id="stackexchangeredis-執行lua-script-範例程式碼">StackExchange.Redis 執行Lua script 範例程式碼</h3>
+
+<p>使用StackExchange.Redis呼叫Lua script的方式有好幾種不同的方式，使用上都是大同小異。</p>
+
+<p>我寫了一個示範用的lua script，功能是先產生100筆key，然後依據查詢條件找出符合的key，這邊傳入的參數我用<code class="highlighter-rouge">@key</code>及<code class="highlighter-rouge">@value</code>，稍後在C#的code就會用到了，請存成script.lua並放到你的專案中。</p>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">local</span> <span class="n">cursor</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="kd">local</span> <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="kd">local</span> <span class="n">match</span> <span class="o">=</span> <span class="err">@</span><span class="n">key</span>
+<span class="kd">local</span> <span class="n">count</span> <span class="o">=</span> <span class="err">@</span><span class="n">value</span>
+<span class="kd">local</span> <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="kd">local</span> <span class="n">done</span> <span class="o">=</span> <span class="kc">false</span>
+<span class="c1">-- 這個迴圈會寫入100個key</span>
+<span class="k">for</span> <span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span> <span class="k">do</span>
+    <span class="n">redis</span><span class="p">.</span><span class="n">call</span><span class="p">(</span><span class="s2">"set"</span><span class="p">,</span> <span class="s2">"test:"</span><span class="o">..</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="c1">-- 呼叫 SCAN, 並依據傳入的key pattern與每次查詢筆數, 逐次讀取符合條件的key存入table</span>
+<span class="k">repeat</span>
+    <span class="kd">local</span> <span class="n">searchResult</span> <span class="o">=</span> <span class="n">redis</span><span class="p">.</span><span class="n">call</span><span class="p">(</span><span class="s2">"SCAN"</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="s2">"MATCH"</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="s2">"COUNT"</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">searchResult</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">searchResult</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="k">in</span> <span class="nb">ipairs</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="k">do</span>
+        <span class="nb">table.insert</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+    <span class="k">end</span>
+    <span class="k">if</span> <span class="n">cursor</span> <span class="o">==</span> <span class="s2">"0"</span> <span class="k">then</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+    <span class="k">end</span>
+<span class="k">until</span> <span class="n">done</span>
+
+<span class="c1">--排序後回傳結果</span>
+<span class="nb">table.sort</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="k">return</span> <span class="n">result</span>
+</code></pre></div></div>
+
+<p>C#的部份我也寫了一個RunLuaScript()的私有靜態方法，請注意傳入的參數名稱<code class="highlighter-rouge">key = (RedisKey)"test:*", value = 5</code>，這必須跟Lua script接的<code class="highlighter-rouge">@key</code>及<code class="highlighter-rouge">@value</code>同名，這是LuaScript class提供的功能，如果型別是<code class="highlighter-rouge">RedisKey</code>的話，會幫你轉成<code class="highlighter-rouge">KEYS[]</code>，否則的話轉成<code class="highlighter-rouge">ARGV[]</code>。</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">redisHost</span> <span class="p">=</span> <span class="s">"localhost:6379"</span><span class="p">;</span>
+    <span class="n">RedisConnection</span><span class="p">.</span><span class="nf">Init</span><span class="p">(</span><span class="n">redisHost</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">redis</span> <span class="p">=</span> <span class="n">RedisConnection</span><span class="p">.</span><span class="n">Instance</span><span class="p">.</span><span class="n">ConnectionMultiplexer</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="n">db</span> <span class="p">=</span> <span class="n">redis</span><span class="p">.</span><span class="nf">GetDatabase</span><span class="p">(</span><span class="m">0</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="p">(</span><span class="kt">string</span><span class="p">[])</span><span class="nf">RunLuaScript</span><span class="p">(</span><span class="n">redis</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">redisHost</span><span class="p">).</span><span class="n">Result</span><span class="p">;</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">item</span> <span class="k">in</span> <span class="n">result</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">item</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">Console</span><span class="p">.</span><span class="nf">Read</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">private</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">RedisResult</span><span class="p">&gt;</span> <span class="nf">RunLuaScript</span><span class="p">(</span><span class="n">ConnectionMultiplexer</span> <span class="n">redis</span><span class="p">,</span> <span class="n">IDatabase</span> <span class="n">db</span><span class="p">,</span> <span class="kt">string</span> <span class="n">defaultServer</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">LuaScript</span>
+        <span class="p">.</span><span class="nf">Prepare</span><span class="p">(</span><span class="n">File</span><span class="p">.</span><span class="nf">ReadAllText</span><span class="p">(</span><span class="s">"script.lua"</span><span class="p">))</span>
+        <span class="p">.</span><span class="nf">Load</span><span class="p">(</span><span class="n">redis</span><span class="p">.</span><span class="nf">GetServer</span><span class="p">(</span><span class="n">defaultServer</span><span class="p">))</span>
+        <span class="p">.</span><span class="nf">EvaluateAsync</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="k">new</span> <span class="p">{</span> <span class="n">key</span> <span class="p">=</span> <span class="p">(</span><span class="n">RedisKey</span><span class="p">)</span><span class="s">"test:*"</span><span class="p">,</span> <span class="k">value</span> <span class="p">=</span> <span class="m">5</span> <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>這段程式碼還有呼叫了<code class="highlighter-rouge">Load()</code>，這會把Lua script先載入指定的Redis server，一般指定Master就可以了，會自動replicate到Slave。載入後會拿到一個SHA1 hash code，之後執行時只需傳入這個code，不需重傳整份Lua script，對需要頻繁執行的script有效能上的幫助。</p>
+
+<h3 id="lua-script的debug方式">Lua script的Debug方式</h3>
+
+<p>Lua script因為是運行在Redis上，所以在3.2版推出之前，Debug一直是比較麻煩的部份，但作者在3.2版提供了debug mode，方便開發人員在開發階段進行除錯。</p>
+
+<p>testDebug.lua</p>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">local</span> <span class="n">key</span> <span class="o">=</span> <span class="n">KEYS</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="kd">local</span> <span class="n">data</span> <span class="o">=</span> <span class="n">ARGV</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">redis</span><span class="p">.</span><span class="n">call</span><span class="p">(</span><span class="s2">"SET"</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="k">return</span> <span class="n">redis</span><span class="p">.</span><span class="n">call</span><span class="p">(</span><span class="s2">"GET"</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>我寫了一個很簡單的Lua script並存成testDebug.lua，接下來要透過Redis-cli這支命令列程式來執行這個script，但參數加上<code class="highlighter-rouge">--ldb</code>，這是告訴Redis接下來以debug模式執行這支Lua script。</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker <span class="nb">exec</span> <span class="nt">-it</span> redis redis-cli <span class="nt">--ldb</span> <span class="nt">--eval</span> /tmp/lua/testDebug.lua <span class="s2">"foo"</span> , <span class="s2">"bar"</span>
+</code></pre></div></div>
+
+<p>執行後會進入debug模式，接下來可以輸入<code class="highlighter-rouge">s</code>單步執行，或是輸入<code class="highlighter-rouge">p</code>顯示所有的變數值。</p>
+
+<p>Debug模式提供了蠻多的指令方便開發人員除錯，<strong>但要注意不要在正式環境執行<code class="highlighter-rouge">--ldb</code></strong>，因為Debug模式是一種阻斷模式，所有的請求都會被這個session阻塞住，可想而之在正式環境加上這個參數絕對會搞死系統的(如果你的系統邊緣到根本沒人用就又另當別論了…)。</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>jed@Jed-MacBook-Pro:~/Workspace/code/lua% docker <span class="nb">exec</span> <span class="nt">-it</span> redis redis-cli <span class="nt">--ldb</span> <span class="nt">--eval</span> /tmp/lua/testDebug.lua <span class="s2">"foo"</span> , <span class="s2">"bar"</span>
+Lua debugging session started, please use:
+quit    <span class="nt">--</span> End the session.
+restart <span class="nt">--</span> Restart the script <span class="k">in </span>debug mode again.
+<span class="nb">help</span>    <span class="nt">--</span> Show Lua script debugging commands.
+
+<span class="k">*</span> Stopped at 1, stop reason <span class="o">=</span> step over
+-&gt; 1   <span class="nb">local </span>key <span class="o">=</span> KEYS[1]
+lua debugger&gt; s
+<span class="k">*</span> Stopped at 2, stop reason <span class="o">=</span> step over
+-&gt; 2   <span class="nb">local </span>data <span class="o">=</span> ARGV[1]
+lua debugger&gt; s
+<span class="k">*</span> Stopped at 3, stop reason <span class="o">=</span> step over
+-&gt; 3   redis.call<span class="o">(</span><span class="s2">"SET"</span>, key, data<span class="o">)</span>
+lua debugger&gt; p
+&lt;value&gt; key <span class="o">=</span> <span class="s2">"foo"</span>
+&lt;value&gt; data <span class="o">=</span> <span class="s2">"bar"</span>
+lua debugger&gt;
+</code></pre></div></div>
+
+<p>除了運行<code class="highlighter-rouge">--ldb</code>以外，當然還有其他的方式可以幫助除錯，例如：</p>
+
+<ul>
+  <li>在Lua script內呼叫redis.log()，把需要記錄的除錯訊息寫入Redis的log file</li>
+  <li>用List當log，因為List是一直append的，符合log的特性</li>
+  <li>使用專門的Lua script editor協助除錯，例如ZeroBrandStudio</li>
+</ul>
+
+<p>ZeroBrandStudio是一個蠻好用的Lua script IDE，使用方式可以參考我同事小黑寫的這篇<a href="https://blackie1019.github.io/2018/05/01/Write-Redis-Lua-Script-with-ZeroBrane-Studio/" target="_blank">Write Redis Lua Script with ZeroBrane Studio</a></p>
+
+<p>因為我個人比較習慣用VSCode，所以就沒有用ZeroBrandStudio，但它用來除錯的確蠻方便的。</p>
+
+<h2 id="小結">小結</h2>
+
+<p>這一篇儘量把PUB/SUB與Lua script基礎的部份講完，包含了一些實務上可能會遇到的問題，因內容有些多，所以Trouble shooting的部份就留待下一篇再講了。如果有任何意見，歡迎留言討論。</p>
+</div>
+				<footer><meta itemprop="dateModified" content="2018-05-13T00:00:00+08:00"><div class="article-license"><div class="m-license"><div class="clearfix"><a class="octocat" href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-05-13-Redis-Programming-CSharp-Basic-2.md">
+        <img alt="View on Github" src="/assets/images/octocat.jpg" />
+      </a><p><a href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-05-13-Redis-Programming-CSharp-Basic-2.md">在 Github 上查閱此文。</a></p><p>本文遵守 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> 許可協議。</p><a class="license" rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
+      <img alt="Creative Commons License" src="/assets/images/license-cc4.png" />
+    </a><p>歡迎轉載，轉載需註明出處，且禁止用於商業目的。</p>
+  </div>
+</div></div>
+				</footer>
+			</article>
+			<div class="article-previous-next clearfix"><div class="article-previous"><span>上篇</span><a href="/2018/05/20/Redis-Programming-CSharp-Basic-3.html">Redis系列 - C#存取Redis (下)</a></div><div class="article-next"><span>下篇</span><a href="/2018/05/11/Redis-Programming-CSharp-Basic-1.html">Redis系列 - C#存取Redis (上)</a></div></div></div>
+	</div>
+</div></div>
+      </div>
+    </div><div class="m-page-footer js-page-footer">
+  <div class="main">
+    <aside><div class="follow-me"><ul itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Jed Lin">
+    <link itemprop="url" href="http://localhost:4000/"><li title="在 Facebook 上關注我。">
+        <a class="floating-action-round-button facebook" itemprop="sameAs" href="https://www.facebook.com/jed.motor" target="_blank">
+          <div class="icon"><svg fill="#000000" width="24px" height="24px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M767.428571 6.857143l0 150.857143-89.714286 0q-49.142857 0-66.285714 20.571429t-17.142857 61.714286l0 108 167.428571 0-22.285714 169.142857-145.142857 0 0 433.714286-174.857143 0 0-433.714286-145.714286 0 0-169.142857 145.714286 0 0-124.571429q0-106.285714 59.428571-164.857143t158.285714-58.571429q84 0 130.285714 6.857143z" />
+</svg></div>
+        </a>
+      </li><li title="在 Linkedin 上關注我。">
+        <a class="floating-action-round-button linkedin" itemprop="sameAs" href="https://www.linkedin.com/in/jed-lin" target="_blank">
+          <div class="icon"><svg fill="#000000" width="24px" height="24px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M260.096 155.648c0 27.307008-9.899008 50.516992-29.696 69.632-19.796992 19.115008-45.396992 28.672-76.8 28.672-30.036992 0-54.612992-9.556992-73.728-28.672-19.115008-19.115008-28.672-42.324992-28.672-69.632 0-28.672 9.556992-52.224 28.672-70.656 19.115008-18.432 44.372992-27.648 75.776-27.648 31.403008 0 56.32 9.216 74.752 27.648 18.432 18.432 28.331008 41.984 29.696 70.656 0 0 0 0 0 0m-202.752 808.96c0 0 0-632.832 0-632.832 0 0 196.608 0 196.608 0 0 0 0 632.832 0 632.832 0 0-196.608 0-196.608 0 0 0 0 0 0 0m313.344-430.08c0-58.708992-1.364992-126.292992-4.096-202.752 0 0 169.984 0 169.984 0 0 0 10.24 88.064 10.24 88.064 0 0 4.096 0 4.096 0 40.96-68.267008 105.812992-102.4 194.56-102.4 68.267008 0 123.220992 22.868992 164.864 68.608 41.643008 45.739008 62.464 113.664 62.464 203.776 0 0 0 374.784 0 374.784 0 0-196.608 0-196.608 0 0 0 0-350.208 0-350.208 0-91.476992-33.451008-137.216-100.352-137.216-47.787008 0-81.236992 24.576-100.352 73.728-4.096 8.192-6.144 24.576-6.144 49.152 0 0 0 364.544 0 364.544 0 0-198.656 0-198.656 0 0 0 0-430.08 0-430.08 0 0 0 0 0 0" />
+</svg></div>
+        </a>
+      </li></ul></div>
+</aside>
+    <footer class="site-info">
+      <p>© Jed's blog 2018</p>
+      <p>Powered by <a title="Jekyll is a simple, blog-aware, static site generator." href="http://jekyllrb.com/">Jekyll</a> & <a
+        title="TeXt is a succinct theme for blogging." href="https://github.com/kitian616/jekyll-TeXt-theme">TeXt Theme</a>.</p>
+    </footer>
+  </div>
+</div><script>(function () {
+  var $body = document.body;
+  function classnames(classes) {
+    var i, cur, _classes = '';
+    if (window.isString(classes)) {
+      _classes =  classes;
+    } else if (window.isArray(classes)) {
+      for (i = 0; i < classes.length; i++) {
+        cur = classes[i];
+        if (window.isString(cur)) {
+          _classes = _classes.concat(_classes ? ' ' + cur : cur);
+        }
+      }
+    } else {
+      return '';
+    }
+    return _classes;
+  }
+  function addClass(dom, classname) {
+    dom.setAttribute('class', classnames([dom.getAttribute('class'), classname]));
+  }
+  if (window.hasEvent('touchstart')) {
+    addClass($body, 'is-touch');
+    document.addEventListener('touchstart', function(){}, false);
+  } else {
+    addClass($body, 'not-touch');
+  }
+})();</script><script>
+  (function() {
+    var TEXT_VARIABLES = {
+      sources: {
+        jquery: 'https://cdn.bootcss.com/jquery/3.1.1/jquery.min.js',
+        leancloud_js_sdk: '//cdn1.lncld.net/static/js/3.4.1/av-min.js',
+        chart: 'https://cdn.bootcss.com/Chart.js/2.7.1/Chart.bundle.min.js',
+        gitalk: {
+          js: 'https://cdn.bootcss.com/gitalk/1.2.2/gitalk.min.js',
+          css: 'https://cdn.bootcss.com/gitalk/1.2.2/gitalk.min.css'
+        },
+        mathjax: 'https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML',
+        mermaid: 'https://cdn.bootcss.com/mermaid/7.1.2/mermaid.min.js'
+      },
+      site: {
+        toc: {
+          selectors: 'h1,h2,h3'
+        }
+      }
+    };
+    window.TEXT_VARIABLES = TEXT_VARIABLES;
+  })();
+</script><script>(function() {
+  var SOURCES = window.TEXT_VARIABLES.sources;
+  function scrollAnimateTo(destination, duration, callback) {
+    var $body = $('html, body'), bodyScrollTop = $body.scrollTop();
+    if(bodyScrollTop === destination) { return; }
+    $body.animate({ scrollTop: destination }, duration, callback);
+  }
+  window.scrollTopAnchor = function(anchor, callback) {
+    scrollAnimateTo($(anchor).offset().top, 400, function() {
+      window.history.replaceState(null, '', window.location.href.split('#')[0] + anchor);
+      callback && callback();
+    });
+  };
+  window.Lazyload.js(SOURCES.jquery, function() {
+    var $articleContent = $('.m-post, .m-page').find('.m-article-content'), $this;
+    $articleContent.children('.highlight').each(function() {
+      $this = $(this);
+      $this.attr('data-lang', $this.find('code').attr('data-lang'));
+    });
+
+    $articleContent.children('h1, h2, h3, h4, h5, h6').each(function() {
+      $this = $(this);
+      $this.append($('<a class="anchor" aria-hidden="true"></a>').html('<svg fill="#000000" width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg>'));
+    });
+    $articleContent.on('click', '.anchor', function() {
+      window.scrollTopAnchor('#' + $(this).parent().attr('id'));
+    });
+  });
+})();(function() {
+  var SOURCES = window.TEXT_VARIABLES.sources;
+  window.Lazyload.js(SOURCES.jquery, function() {
+    var $window = $(window), $document = $(window.document), $root;
+    var rootTop, rootLeft, rootHeight, scrollBottom, rootBottomTop, lastScrollTop;
+    var offsetBottom = 0, disabled = false, hasInit = false;
+
+    function setOptions(options) {
+      var _options = options || {};
+      _options.offsetBottom && (offsetBottom = _options.offsetBottom);
+      _options.disabled !== undefined && (disabled = _options.disabled);
+      calc(true);
+    }
+    function initData() {
+      top();
+      var rootOffset = $root.offset();
+      rootHeight = $root.outerHeight();
+      rootTop = rootOffset.top;
+      rootLeft = rootOffset.left;
+    }
+    function calc(needInitData) {
+      needInitData && initData();
+      scrollBottom = $document.outerHeight() - offsetBottom - rootHeight;
+      rootBottomTop = scrollBottom - rootTop;
+    }
+    function top() {
+      $root.removeClass('fixed').css({
+        left: 0,
+        top: 0
+      });
+    }
+    function fixed() {
+      $root.addClass('fixed').css({
+        left: rootLeft + 'px',
+        top: 0
+      });
+    }
+    function bottom() {
+      $root.removeClass('fixed').css({
+        left: 0,
+        top: rootBottomTop + 'px'
+      });
+    }
+    function setState(force) {
+      force !== true && (force = false);
+      var scrollTop = $window.scrollTop();
+      if (scrollTop >= rootTop && scrollTop <= scrollBottom) {
+        (!force && lastScrollTop >= rootTop && lastScrollTop <= scrollBottom) || fixed();
+      } else if (scrollTop < rootTop) {
+        (!force && lastScrollTop < rootTop) || top();
+      } else {
+        (!force && lastScrollTop > scrollBottom) || bottom();
+      }
+      lastScrollTop = scrollTop;
+    }
+    function init() {
+      if(!hasInit) {
+        var interval, timeout;
+        calc(true); setState();
+        // run calc every 1.5 seconds
+        interval = setInterval(function() {
+          calc();
+        }, 1500);
+        timeout = setTimeout(function() {
+          clearInterval(interval);
+        }, 50000);
+        window.pageLoad.then(function() {
+          clearInterval(interval);
+          clearTimeout(timeout);
+        });
+        $window.on('scroll', function() {
+          disabled || setState();
+        });
+        $window.on('resize', window.throttle(function() {
+          disabled || (calc(true), setState(true));
+        }, 100));
+        hasInit = true;
+      }
+    }
+
+    function affix(options) {
+      $root = this;
+      setOptions(options);
+      if (!disabled) {
+        init();
+      }
+      $window.on('resize', window.throttle(function() {
+        init();
+      }, 200));
+      return {
+        setOptions: setOptions
+      };
+    }
+    $.fn.affix = affix;
+  });
+})();(function() {
+  var SOURCES = window.TEXT_VARIABLES.sources;
+  window.Lazyload.js(SOURCES.jquery, function() {
+    var $window = $(window), $root, $tocUl = $('<ul></ul>'), $tocLi, $headings, $activeLast, $activeCur;
+    var selectors = 'h1,h2,h3', container = 'body', disabled = false;
+    var headingsPos, scrolling = false, rendered = false, hasInit = false;
+    function setOptions(options) {
+      var _options = options || {};
+      _options.selectors && (selectors = _options.selectors);
+      _options.container && (container = _options.container);
+      _options.disabled !== undefined && (disabled = _options.disabled);
+      $headings = $(container).find(selectors);
+      calc();
+    }
+    function calc() {
+      headingsPos = [];
+      $headings.each(function() {
+        headingsPos.push(Math.floor($(this).offset().top));
+      });
+    }
+    function setState(element, disabled) {
+      var scrollTop = $window.scrollTop(), i;
+      if (disabled || !headingsPos || headingsPos.length < 1) { return; }
+      if (element) {
+        $activeCur = element;
+      } else {
+        for (i = 0; i < headingsPos.length; i++) {
+          if (scrollTop >= headingsPos[i]) {
+            $activeCur = $tocLi.eq(i);
+          } else {
+            $activeCur || ($activeCur = $tocLi.eq(i));
+            break;
+          }
+        }
+      }
+      $activeLast && $activeLast.removeClass('toc-active');
+      ($activeLast = $activeCur).addClass('toc-active');
+    }
+    function render() {
+      if(!rendered) {
+        $root.append($tocUl);
+        $headings.each(function() {
+          var $this = $(this);
+          $tocUl.append($('<li></li>').addClass('toc-' + $this.prop('tagName').toLowerCase())
+            .append($('<a></a>').text($this.text()).attr('href', '#' + $this.prop('id'))));
+        });
+        $tocLi = $tocUl.children('li');
+        $tocUl.on('click', 'a', function(e) {
+          e.preventDefault();
+          var $this = $(this);
+          scrolling = true;
+          setState($this.parent());
+          window.scrollTopAnchor($this.attr('href'), function() {
+            scrolling = false;
+          });
+        });
+      }
+      rendered = true;
+    }
+    function init() {
+      var interval, timeout;
+      if(!hasInit) {
+        render(); calc(); setState(null, scrolling);
+        // run calc every 1.5 seconds
+        interval = setInterval(function() {
+          calc();
+        }, 1500);
+        timeout = setTimeout(function() {
+          clearInterval(interval);
+        }, 50000);
+        window.pageLoad.then(function() {
+          clearInterval(interval);
+          clearTimeout(timeout);
+        });
+        $window.on('scroll', function() {
+          disabled || setState(null, scrolling);
+        });
+        $window.on('resize', window.throttle(function() {
+          if (!disabled) {
+            render(); calc(); setState(null, scrolling);
+          }
+        }, 100));
+      }
+      hasInit = true;
+    }
+    function toc(options) {
+      $root = this;
+      setOptions(options);
+      if (!disabled) {
+        init();
+      }
+      $window.on('resize', window.throttle(function() {
+        init();
+      }, 200));
+      return {
+        setOptions: setOptions
+      };
+    }
+    toc.setOptions = setOptions;
+    $.fn.toc = toc;
+  });
+})();(function() {
+  var SOURCES = window.TEXT_VARIABLES.sources;
+  var TOC_SELECTOR = window.TEXT_VARIABLES.site.toc.selectors;
+  window.Lazyload.js(SOURCES.jquery, function() {
+    var $window = $(window);
+    var $pageStage = $('.js-page-stage');
+    var $pageFooter = $('.js-page-footer');
+    var $articleContent = $('.js-article-content');
+    var $articleAside = $('.js-article-aside');
+    var $toc = $('.js-toc');
+    var $col2 = $('.js-col-2');
+    var toc, affix;
+    var hasToc = $articleContent.find(TOC_SELECTOR).length > 0;
+    var tocDisabled = false;
+
+    function disabled() {
+      return $col2.css('display') === 'none' || !hasToc;
+    }
+
+    $window.on('resize', window.throttle(function() {
+      tocDisabled = disabled();
+      toc && toc.setOptions({
+        disabled: tocDisabled
+      });
+      affix && affix.setOptions({
+        disabled: tocDisabled
+      });
+    }, 100));
+
+    if (hasToc) {
+      !$pageStage.hasClass('has-toc') && $pageStage.addClass('has-toc');
+    }
+    tocDisabled = disabled();
+
+    setTimeout(function() {
+      toc = $toc.toc({
+        selectors: TOC_SELECTOR,
+        container: $articleContent,
+        disabled: tocDisabled
+      });
+      affix = $articleAside.affix({
+        offsetBottom: $pageFooter.outerHeight(),
+        disabled: tocDisabled
+      });
+    }, 1000);
+  });
+})();</script><script>
+  window.Lazyload.js('https://cdn.bootcss.com/mermaid/7.1.2/mermaid.min.js', function() {
+    mermaid.init(undefined, '.language-mermaid');
+    mermaid.initialize({ startOnLoad: true });
+  });
+</script></body>
+</html>

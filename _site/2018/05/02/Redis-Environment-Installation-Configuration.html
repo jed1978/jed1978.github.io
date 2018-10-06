@@ -1,9 +1,9 @@
 <!DOCTYPE html><html lang="zh-Hant">
   <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>Upgrade GitLab from 10.3.3 to 10.7.1 - Jed's blog</title>
-<meta name="description" content="Gitlab 10.3.3 EE 更新 10.7.1 EE的問題升版失敗某同事在某一天星期五上午，提早到了公司，依原先的計畫要宰殺升級全部團隊共用的Gitlab Server到最新的10.7.1。他依照原本設計的SOP進行升級後，如沒有意外的話，這篇文章也就不會出現了…">
-<link rel="canonical" href="http://localhost:4000/2018/04/27/GitLab-Upgrade-500-Error.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>Redis系列 - 環境建置篇 - Jed's blog</title>
+<meta name="description" content="Redis系列 - 環境建置篇這篇會是Redis系列文的第一篇，著重在建立環境的基本知識。基本介紹以官方的解釋，Redis是一套Open source的In-memory NoSQL database，可以應用在Cache、Database及簡單的Message broker。作者則說它是一個Data Struc...">
+<link rel="canonical" href="http://localhost:4000/2018/05/02/Redis-Environment-Installation-Configuration.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
 <!-- for Safari on iOS https://developer.apple.com/ios/human-interface-guidelines/icons-and-images/app-icon/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/images/logo/icon-180x180.png"><link rel="apple-touch-icon" sizes="167x167" href="/assets/images/logo/icon-167x167.png"><link rel="apple-touch-icon" sizes="152x152" href="/assets/images/logo/icon-152x152.png"><link rel="apple-touch-icon" sizes="120x120" href="/assets/images/logo/icon-120x120.png"><link rel="shortcut icon" href="/assets/images/logo/icon-120x120.png">
 <!-- for Chrome on Android https://developer.chrome.com/multidevice/android/installtohomescreen -->
 <meta name="mobile-web-app-capable" content="yes"><link rel="icon" sizes="192x192" href="/assets/images/logo/icon-192x192.png">
@@ -238,119 +238,144 @@
 		<div class="col-1">
 			<article class="js-article" itemscope itemtype="http://schema.org/BlogPosting">
 				<meta itemprop="mainEntityOfPage" itemscope itemType="https://schema.org/WebPage"/>
-				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">Upgrade GitLab from 10.3.3 to 10.7.1</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
-          <a class="pill-button" href="/all.html?tag=GitLab">GitLab</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=Upgrade">Upgrade</a>
+				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">Redis系列 - 環境建置篇</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=Redis">Redis</a>
         </li><li>
           <a class="pill-button" href="/all.html?tag=Docker">Docker</a>
         </li></ul><div class="other-wrapper"><div class="view-wrapper">
-        <span class="article-view" data-page-key="GitLab">0
+        <span class="article-view" data-page-key="Redis">0
         </span> 閱讀
-      </div><div class="date-wrapper"><time class="article-meta" datetime="2018-04-27T00:00:00+08:00"
-          itemprop="datePublished">2018年 04月27日
+      </div><div class="date-wrapper"><time class="article-meta" datetime="2018-05-02T00:00:00+08:00"
+          itemprop="datePublished">2018年 05月02日
         </time></div>
   </div>
 </div>
 </header>
-				<div class="m-article-content js-article-content" itemprop="articleBody"><h1 id="gitlab-1033-ee-更新-1071-ee的問題">Gitlab 10.3.3 EE 更新 10.7.1 EE的問題</h1>
+				<div class="m-article-content js-article-content" itemprop="articleBody"><h1 id="redis系列---環境建置篇">Redis系列 - 環境建置篇</h1>
 
-<h2 id="升版失敗">升版失敗</h2>
+<p>這篇會是Redis系列文的第一篇，著重在建立環境的基本知識。</p>
 
-<p>某同事在某一天星期五上午，提早到了公司，依原先的計畫要<del>宰殺</del>升級全部團隊共用的Gitlab Server到最新的10.7.1。</p>
+<h2 id="基本介紹">基本介紹</h2>
 
-<p>他依照原本設計的SOP進行升級後，如沒有意外的話，這篇文章也就不會出現了…
+<p>以官方的解釋，Redis是一套Open source的In-memory NoSQL database，可以應用在Cache、Database及簡單的Message broker。</p>
+
+<p>作者則說它是一個<code class="highlighter-rouge">Data Structures Server</code>，顧名思義，它提供了很多種資料結構及相對應的指令去操作這些資料。由於它是以In-Memory的方式為主，另一個很明顯的特性就是它很快，非常快，正確使用下可以輕鬆的處理每秒上萬的請求。</p>
+
+<p>由於它具備極高的效能與可靠性，在很多系統中都會看到它的身影，對Backend/Fullstack engineer來說，這已經是必備的技能之一。
 <!--more--></p>
 
-<p>通訊群組內通知大家升級完成，期望的美好未來沒有發生，團隊陸續回報了下列問題</p>
+<h2 id="安裝與設定">安裝與設定</h2>
 
-<ul>
-  <li>ssh: connect to host gitlab.xxxx.net port 8022: Connection refused</li>
-  <li>Internal 500 Error</li>
-</ul>
+<p>安裝Redis有幾種方式，一種是採原生安裝在乾淨的OS上，另一種是使用Docker。本文二種方式都會討論到。</p>
 
-<p>因為事態嚴重，全公司十多個團隊同時發生，所以趕快進行降版復原</p>
+<h3 id="原生安裝">原生安裝</h3>
 
-<p>但這不是一個童話故事，惡夢並未在降版後就結束了，這是成人世界殘酷的現實…</p>
+<p>測試環境: CentOS 7</p>
 
-<h2 id="降版失敗">降版失敗</h2>
+<p>CentOS預設有些東西沒有安裝，所以我先安裝一些必要的套件</p>
 
-<p>降版後，回報的問題不見了，但取而代之的是AD驗證失敗</p>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">yum <span class="nt">-y</span> <span class="nb">install </span>wget gcc make</code></pre></figure>
 
-<p><code class="highlighter-rouge">
-Could not authenticate you from Ldapmain because "Pg::undefinedcolumn: error: column namespaces.deleted at does not exist line 1: ...s" where ("namespaces"."name" = 'jxxxx.xxxx' and "namespace... ^ : select 1 as one from "namespaces" where ("namespaces"."name" = 'jxxxx.xxxx' and "namespaces"."deleted at" is null and "namespaces"."id" != xx and "namespaces"."parent id" is null) limit 1".
-</code></p>
+<p>然後用<code class="highlighter-rouge">wget</code>從Redis官網下載最新的Redis安裝包，這篇文章撰寫時，最新的版本是<code class="highlighter-rouge">4.0.9</code></p>
 
-<p>對，降版失敗! 雖然同事在升級前有備份完整的設定檔，但還原後確發生了其他的問題，懷疑是Gitlab內部在某一版後變更了DB的schema。 由於狀況愈來愈嚴重，跟執行更新的同事討論後，決定再次升級回10.7.1，讓所有團隊可以先建置要部署到QAT的package。</p>
+<p>下載完成後解壓縮到你想要放的位置，然後執行make進行編譯</p>
 
-<p>開弓沒有回頭路，我們只能嘗試看看能不能找到解決方法。</p>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">wget http://download.redis.io/releases/redis-4.0.9.tar.gz
+<span class="nb">tar </span>xzf redis-4.0.9.tar.gz
+<span class="nb">cd </span>redis-4.0.9
+make</code></pre></figure>
 
-<h2 id="問題排查">問題排查</h2>
+<p>編譯完成後執行<code class="highlighter-rouge">utils/install_server.sh</code>，這個腳本會幫你把redis安裝成背景服務</p>
 
-<p>回到10.7.1後，一開始團隊回報正常，原本以為人品爆發，GitLab恢復正常了，但沒多久開始有人回報這個錯誤</p>
+<p>前面幾個選項我都是用<code class="highlighter-rouge">default</code>，但最後的<code class="highlighter-rouge">redis executable path[]</code>，請輸入完整的路徑，以我的環境是<code class="highlighter-rouge">/root/redis-4.0.9/src/redis-server</code></p>
 
-<p><code class="highlighter-rouge">
-fatal: The remote end hung up unexpectedly
-error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500 Internal Server Error
-</code></p>
+<p>安裝完成後應該會看到這個訊息</p>
 
-<p>接下來沒多久，Internal 500 ERROR也跟著出現，嘗試著重啟服務後又正常一陣子，但約20分鐘後這個狀況就會重覆發生。我們開始逐一清查可疑的部份，這段期間就委曲團隊只能用20分鐘，然後重啟服務。</p>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">Selected config:
+Port           : 6379
+Config file    : /etc/redis/6379.conf
+Log file       : /var/log/redis_6379.log
+Data <span class="nb">dir</span>       : /var/lib/redis/6379
+Executable     : /root/redis-4.0.9/src/redis-server
+Cli Executable : /root/redis-4.0.9/src/redis-cli
+Is this ok? Then press ENTER to go on or Ctrl-C to abort.</code></pre></figure>
 
-<p>在檢查了很多部份後，注意到一個錯誤訊息非常可疑</p>
+<p>按下ENTER鍵後，就會把redis安裝並執行在背景，接下來我們用redis-cli測試一下</p>
 
-<p><code class="highlighter-rouge">
-time="2018-04-27T07:42:48Z" level=fatal error="Failed to bind mount /var/opt/gitlab/gitlab-rails/shared/pages on /tmp/gitlab-pages-1524814968737227221/pages. operation not permitted"
-</code></p>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">src/redis-cli <span class="nt">-h</span> localhost <span class="nt">-p</span> 6379</code></pre></figure>
 
-<p>我查了一下GitLab官方的issue列表，發現在5天前有人在10.7.0回報這個<a href="https://gitlab.com/gitlab-org/gitlab-pages/issues/129">issue</a>，我仔細的讀了整個討論串，確定這個issue在10.7.1並未被修正，也有其他網友提出了workaround，就是把GitLab Page先disabled。</p>
+<p>如果安裝成功的話，就會連到Redis了，但如果要實際應用到production，請不要學我用root的權限啊…</p>
 
-<p>剛好我們之前在建置GitLab時也沒有用到這個功能，所以趕緊在gitlab.rb將Page關閉，然後重啟服務。</p>
+<h3 id="redis的基本設定">Redis的基本設定</h3>
 
-<p><code class="highlighter-rouge">
-gitlab_pages['enable'] = false
-</code></p>
+<p>Redis安裝完成後，會有預設的設定檔讓它可以正常的執行，但實際應用上，有些設定值還是要調整一下</p>
 
-<p>在重啟服務後，各團隊陸續回報功能已正常，但還是有一個問題回報，就是我們用來跟Jenkins做CI整合的Webhook還是壞的。</p>
+<p>如果你按照前一個步驟安裝完成，那麼設定檔預設會是在<code class="highlighter-rouge">/etc/redis/6379.conf</code></p>
 
-<p>到GitLab的Webhook頁面按下Push測試，依然會出現500 ERROR的錯誤頁面，研判可能不是同一個問題(<code class="highlighter-rouge">後續解釋第一個問題時，就會知道為什麼我會判斷不是同一個問題</code>)，上網google了一下，原來是在10.5.6版時對Outbound Request新增了一個設定，用Admin的權限登入設定後，團隊回報功能正常，終於結束這個GitLab升級事件。</p>
+<p>接下來列出的幾個設定值是需要調整的</p>
 
-<h2 id="問題原因分析">問題原因分析</h2>
+<p><code class="highlighter-rouge">bind 127.0.0.1</code> - 這個要改成這部機器的實際IP，不然其他機器是連不進來的</p>
 
-<p>這次的主要問題是升級後的500 ERROR，雖然source code不用擔心會掉，但還是造成很大的不便。</p>
+<p><code class="highlighter-rouge">port 6379</code> - 如果你會在同一台主機上跑多個instance，那麼port就一定要分別設定不一樣的</p>
 
-<p>根據GitLab的開發人員解釋，這個問題跟Docker有關係，然後我們剛好就是用官方的Omnibus Docker image建置GitLab。</p>
+<p><code class="highlighter-rouge">memory &lt;bytes&gt;</code> - 設定可用的RAM上限，比如主機有16G，你希望Redis使用8G，剩餘的保留給OS及其他服務，那就設定為<code class="highlighter-rouge">memory 8g</code></p>
 
-<p>GitLab有一個Page功能，就像是GitHub的Page一樣，用來建置靜態網站，因為這功能會佔用較多磁碟空間，原本是用in-place的方式在Docker內部調用chroot掛載外部Volume</p>
+<p><code class="highlighter-rouge">maxmemory-policy noeviction</code> - 配合memory的設定，要設定RAM不足時的回收機制，建議用 <code class="highlighter-rouge">maxmemory-policy volatile-lru</code></p>
 
-<p>在10.7.0改版後，改成用bind mounting的方式來掛載外部Volume，這對privileged container來說是比較方便的，但<strong>同時他們也移掉了舊版的in-place方式</strong></p>
+<p>改完設定存檔後要重新Redis，新設定才會生效</p>
 
-<p>問題來了，我們用的官方Omnibus docker image是以Unprivileged 的方式發行，意味著裡面的user不具備外部環境的root權限，所以沒辦法在container內直接使用bind mounting的方式掛載外部的volume，只能用chroot</p>
+<h3 id="使用docker">使用Docker</h3>
 
-<p>但因為我們其實沒有開啟GitLab Page的功能，所以直接在參數內關閉Page，繞過了這個issue</p>
+<p>雖然Redis的安裝並不困難，但直接使用Docker無疑是更簡單的方式</p>
 
-<p>官方說這應該要變成一個新功能，提供一個設定值讓使用者決定要用新版的做法還是舊版的，然後default要用舊版的設定，承諾會在之後修正，但不會在10.7.1</p>
+<p>先假設你已經安裝好Docker的環境，接下來只要輸入下列指令就能快速的跑起來一個Redis instance</p>
 
-<h2 id="回顧檢討">回顧檢討</h2>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker run <span class="nt">--name</span> MyRedisCache <span class="nt">-d</span> <span class="nt">-p</span> 6379:6369 redis</code></pre></figure>
 
-<p>其實之前一樣的版本升級也做過幾次，但第一次出現這麼嚴重的狀況，因此也暴露出了一些問題。</p>
+<p>要執行Docker Container內的<code class="highlighter-rouge">Redis-cli</code>的話就輸入這個指令</p>
 
-<ul>
-  <li>現有的備份機制做的不太好，應該要有一個能手動進行備份的腳本</li>
-  <li>版本更新一次跳太多版，還挑了一個才發行5天的release</li>
-  <li>應該先確認各版本的已知issue後才決定要更新到哪一個版本</li>
-  <li>沒有環境驗證更新後的結果，等於是直接拿production開刀</li>
-</ul>
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker run <span class="nt">-it</span> <span class="nt">--link</span> MyRedisCache:redis <span class="nt">--rm</span> redis redis-cli <span class="nt">-h</span> redis <span class="nt">-p</span> 6379</code></pre></figure>
+
+<h3 id="redis在docker的基本設定">Redis在Docker的基本設定</h3>
+
+<p>Redis docker image並沒有自帶redis的config，所有設定值都是用預設的，而且由於docker的一些特性，並不需要特別去設定要bind到哪個實體IP</p>
+
+<p>可是在實際使用時，還是會需要自定義一些設定值，比如<code class="highlighter-rouge">Memory policy</code>，接下來就一起來看如何建立Redis的設定檔</p>
+
+<p>先連到Redis官網取得對應版本的redis.conf</p>
+
+<p><a href="https://redis.io/topics/config" target="_blank">Redis configuration</a></p>
+
+<p>因為拉下來的docker image是4.0.9，所以我是使用對應4.0版的redis.conf</p>
+
+<p>下載回來後找個適合的地方放，因為寫這篇文章時是用Mac，我是放在<code class="highlighter-rouge">/User/jed/Workspace/docker_volume/redis/redis.conf</code></p>
+
+<p>然後請先停下正在運行的Redis container，再把<code class="highlighter-rouge">redis.conf</code>以volume的方式掛載到docker上</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker stop 6c5b // 6c5b請替換成你運行中的redis container <span class="nb">id
+</span>docker run <span class="nt">-d</span> <span class="nt">-p</span> 6379:6379 <span class="nt">-v</span> /Users/jed/Workspace/docker_volume/redis/redis.conf:/usr/local/etc/redis/redis.conf redis</code></pre></figure>
+
+<p>以這個方式掛載上來的redis.conf就可以在host進行修改，修改完再啟用一個新的container就好</p>
+
+<p>附帶一提，官方的docker image沒有自帶vim，如果你想在container編輯的話，請另外以apt-get安裝vim</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">apt-get update
+apt-get <span class="nb">install </span>vim</code></pre></figure>
+
+<h2 id="結語">結語</h2>
+
+<p>這篇是學習Redis之前需要知道的基本環境建置，應該算是蠻簡單的。</p>
 </div>
-				<footer><meta itemprop="dateModified" content="2018-04-27T00:00:00+08:00"><div class="article-license"><div class="m-license"><div class="clearfix"><a class="octocat" href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-04-27-GitLab-Upgrade-500-Error.md">
+				<footer><meta itemprop="dateModified" content="2018-05-02T00:00:00+08:00"><div class="article-license"><div class="m-license"><div class="clearfix"><a class="octocat" href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-05-02-Redis-Environment-Installation-Configuration.md">
         <img alt="View on Github" src="/assets/images/octocat.jpg" />
-      </a><p><a href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-04-27-GitLab-Upgrade-500-Error.md">在 Github 上查閱此文。</a></p><p>本文遵守 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> 許可協議。</p><a class="license" rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
+      </a><p><a href="https://github.com/jed1978/jed1978.github.io/tree/master/_posts/2018-05-02-Redis-Environment-Installation-Configuration.md">在 Github 上查閱此文。</a></p><p>本文遵守 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> 許可協議。</p><a class="license" rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
       <img alt="Creative Commons License" src="/assets/images/license-cc4.png" />
     </a><p>歡迎轉載，轉載需註明出處，且禁止用於商業目的。</p>
   </div>
 </div></div>
 				</footer>
 			</article>
-			<div class="article-previous-next clearfix"><div class="article-previous"><span>上篇</span><a href="/2018/04/29/ASP-Net-Core-Redis-Cache.html">ASP.Net Core - DistributedRedisCache</a></div><div class="article-next"><span>下篇</span><a href="/2018/01/20/Agile-Scrum-Ceremonies-DailyScrum.html">學習敏捷系列 - Daily Scrum</a></div></div></div>
+			<div class="article-previous-next clearfix"><div class="article-previous"><span>上篇</span><a href="/2018/05/03/CI-setup-dotnet-build-server.html">學習CI系列 - 建立.Net build server</a></div><div class="article-next"><span>下篇</span><a href="/2018/04/29/ASP-Net-Core-Redis-Cache.html">ASP.Net Core - DistributedRedisCache</a></div></div></div>
 	</div>
 </div></div>
       </div>

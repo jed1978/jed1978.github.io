@@ -1,10 +1,9 @@
 <!DOCTYPE html><html lang="zh-Hant">
   <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>部落格 - Jed's blog</title>
-<meta name="description" content="寫程式是一件快樂的事，期許自己可以一輩子都能享受這種快樂
-">
-<link rel="canonical" href="http://localhost:4000/"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>跨平台的自動化建置 - 使用Cake build - Jed's blog</title>
+<meta name="description" content="跨平台的自動化建置身為一位有節操有信仰有專業的工程師，最重要的表現就是要很懶。對，你沒看錯，就是要懶，因為懶的自己動手，所以出嘴找別人動手寫程式代替人工。而且不論是團隊開發還是個人開發，有一個能持續建置與發布版本的環境，絕對是保持身心健康的必要條件之一，有了健康的肝，才能加更多的班(?!)自動化建置的架構整個軟...">
+<link rel="canonical" href="http://localhost:4000/2018/10/05/Cake-Build.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
 <!-- for Safari on iOS https://developer.apple.com/ios/human-interface-guidelines/icons-and-images/app-icon/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/images/logo/icon-180x180.png"><link rel="apple-touch-icon" sizes="167x167" href="/assets/images/logo/icon-167x167.png"><link rel="apple-touch-icon" sizes="152x152" href="/assets/images/logo/icon-152x152.png"><link rel="apple-touch-icon" sizes="120x120" href="/assets/images/logo/icon-120x120.png"><link rel="shortcut icon" href="/assets/images/logo/icon-120x120.png">
 <!-- for Chrome on Android https://developer.chrome.com/multidevice/android/installtohomescreen -->
 <meta name="mobile-web-app-capable" content="yes"><link rel="icon" sizes="192x192" href="/assets/images/logo/icon-192x192.png">
@@ -231,31 +230,32 @@
     </nav>
   </div>
 </header>
-<div class="m-page-main"><div class="m-home">
-  <div class="main">
-    <div class="m-post-list"><article><h1><a href="/2018/10/06/Disruptor-Net-IEventTranslator.html">Disruptor.Net - IEventTranslator</a></h1>
-          <div class="m-article-content"><h1 id="ieventtranslator">IEventTranslator</h1>
-
-<p>IEventTranslator是在第3版發布的新功能，這篇文章是介紹使用的方式及設計理念</p>
-
-<h2 id="生產者發送事件到ringbuffer">生產者發送事件到RingBuffer</h2>
-
-<p>事件驅動的一個特性就是透過發送事件給關注的訂閱者，進而讓多個不同的業務邏輯得以實現，以Disruptor的設計，就是要透過<code class="highlighter-rouge">RingBuffer.Publish()</code>這個方法把事件放入RingBuffer，後面的EventHandler則會依據其掛載的順序，由<code class="highlighter-rouge">SequenceBarrier</code>調度執行。</p>
-
-</div><a href="/2018/10/06/Disruptor-Net-IEventTranslator.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
-          <a class="pill-button" href="/all.html?tag=Disruptor">Disruptor</a>
+<div class="m-page-main"><div class="m-post">
+	<div class="main clearfix js-main">
+		<div class="col-2 js-col-2">
+			<aside class="js-article-aside"><div class="m-toc js-toc"></div></aside>
+		</div>
+		<div class="col-1">
+			<article class="js-article" itemscope itemtype="http://schema.org/BlogPosting">
+				<meta itemprop="mainEntityOfPage" itemscope itemType="https://schema.org/WebPage"/>
+				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">跨平台的自動化建置 - 使用Cake build</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=Automation">Automation</a>
         </li><li>
-          <a class="pill-button" href="/all.html?tag=IEventTranslator">IEventTranslator</a>
+          <a class="pill-button" href="/all.html?tag=Cake">Cake</a>
         </li><li>
-          <a class="pill-button" href="/all.html?tag=Event+Driven">Event Driven</a>
+          <a class="pill-button" href="/all.html?tag=CI%2FCD">CI/CD</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Agile">Agile</a>
         </li></ul><div class="other-wrapper"><div class="view-wrapper">
-        <span class="article-view" data-page-key="Disruptor">0
+        <span class="article-view" data-page-key="Cake">0
         </span> 閱讀
-      </div><div class="date-wrapper"><span class="article-meta">2018年 10月06日</span></div>
+      </div><div class="date-wrapper"><time class="article-meta" datetime="2018-10-05T22:46:13+08:00"
+          itemprop="datePublished">2018年 10月05日
+        </time></div>
   </div>
 </div>
-</article><article><h1><a href="/2018/10/05/Cake-Build.html">跨平台的自動化建置 - 使用Cake build</a></h1>
-          <div class="m-article-content"><h1 id="跨平台的自動化建置">跨平台的自動化建置</h1>
+</header>
+				<div class="m-article-content js-article-content" itemprop="articleBody"><h1 id="跨平台的自動化建置">跨平台的自動化建置</h1>
 
 <p>身為一位有節操有信仰有專業的工程師，最重要的表現就是要很懶。</p>
 
@@ -351,186 +351,19 @@
 <h3 id="驗收測試">驗收測試</h3>
 
 <h2 id="結論">結論</h2>
-</div><a href="/2018/10/05/Cake-Build.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
-          <a class="pill-button" href="/all.html?tag=Automation">Automation</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=Cake">Cake</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=CI%2FCD">CI/CD</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=Agile">Agile</a>
-        </li></ul><div class="other-wrapper"><div class="view-wrapper">
-        <span class="article-view" data-page-key="Cake">0
-        </span> 閱讀
-      </div><div class="date-wrapper"><span class="article-meta">2018年 10月05日</span></div>
-  </div>
 </div>
-</article><article><h1><a href="/2018/07/22/Website-Traffic-Shaping-Architecture.html">高流量網站系統架構設計 - 提高交易有效性</a></h1>
-          <div class="m-article-content"><h1 id="高流量網站系統架構設計">高流量網站系統架構設計</h1>
-
-<p>網站最愛高流量，也最怕高流量，瞬間湧入的大量請求到底該怎麼處理才不會讓老闆跳腳?
-常見的網站架構大概長這樣</p>
-
-<pre><code class="language-mermaid">graph LR
-     Browser--&gt;Website
-     Website--&gt;Service
-     Service--&gt;Database
-     Website--&gt;Database
-</code></pre>
-
-<p>這篇就是來聊聊架構該怎麼設計。</p>
-
-<h2 id="架構師應付高流量">架構師應付高流量</h2>
-
-<p>架構師應付高流量的架構設計大致上要做到三類</p>
-
-<ul>
-  <li>分流</li>
-  <li>快取</li>
-  <li>限流</li>
-</ul>
-
-<p>這三種做法應對的狀況是不同的，在架構層級上會分別帶來不同的影響，但相同的原則都是儘量往前，愈往後面層級跑，成本就愈大。</p>
-
-<h2 id="分流">分流</h2>
-
-<p>這裡的分流大致上可以分為</p>
-
-<ul>
-  <li>讀寫分流</li>
-  <li>業務分流</li>
-</ul>
-
-<p>在Browser這個層級，</p>
-</div><a href="/2018/07/22/Website-Traffic-Shaping-Architecture.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
-          <a class="pill-button" href="/all.html?tag=Architecture">Architecture</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=%E6%9E%B6%E6%A7%8B%E8%A8%AD%E8%A8%88">架構設計</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=Traffic+Shaping">Traffic Shaping</a>
-        </li></ul><div class="other-wrapper"><div class="view-wrapper">
-        <span class="article-view" data-page-key="Architecture">0
-        </span> 閱讀
-      </div><div class="date-wrapper"><span class="article-meta">2018年 07月22日</span></div>
+				<footer><meta itemprop="dateModified" content="2018-10-05T22:46:13+08:00"><div class="article-license"><div class="m-license"><div class="clearfix"><a class="octocat" href="https://github.com/jed1978/jed1978.github.io/tree/master/_drafts/Cake-Build.md">
+        <img alt="View on Github" src="/assets/images/octocat.jpg" />
+      </a><p><a href="https://github.com/jed1978/jed1978.github.io/tree/master/_drafts/Cake-Build.md">在 Github 上查閱此文。</a></p><p>本文遵守 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> 許可協議。</p><a class="license" rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
+      <img alt="Creative Commons License" src="/assets/images/license-cc4.png" />
+    </a><p>歡迎轉載，轉載需註明出處，且禁止用於商業目的。</p>
   </div>
-</div>
-</article><article><h1><a href="/2018/06/09/Master-Slave-Architecture-Design-and-Implementation.html">HA架構設計與實作 - Active Standby</a></h1>
-          <div class="m-article-content"><h1 id="ha架構設計與實作---active-standby">HA架構設計與實作 - Active Standby</h1>
-
-<h2 id="瞭解high-availability">瞭解High Availability</h2>
-
-<h2 id="binary-star-pattern">Binary Star pattern</h2>
-</div><a href="/2018/06/09/Master-Slave-Architecture-Design-and-Implementation.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
-          <a class="pill-button" href="/all.html?tag=Architecture">Architecture</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=%E6%9E%B6%E6%A7%8B%E8%A8%AD%E8%A8%88">架構設計</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=Active+Standby">Active Standby</a>
-        </li></ul><div class="other-wrapper"><div class="view-wrapper">
-        <span class="article-view" data-page-key="Architecture">0
-        </span> 閱讀
-      </div><div class="date-wrapper"><span class="article-meta">2018年 06月09日</span></div>
-  </div>
-</div>
-</article><article><h1><a href="/2018/05/20/Redis-Programming-CSharp-Basic-3.html">Redis系列 - C#存取Redis (下)</a></h1>
-          <div class="m-article-content"><h1 id="c存取redis---timeout-trouble-shooting">C#存取Redis - Timeout trouble shooting</h1>
-
-<p>這一篇是討論Timeout trouble shooting為主，有一些基礎知識不再贅述，請參考本人之前的文章。</p>
-
-<ul>
-  <li><a href="{% post_url 2018-05-02-Redis-Environment-Installation-Configuration %}">Redis系列 - 環境建置篇</a></li>
-  <li><a href="{% post_url 2018-05-11-Redis-Programming-CSharp-Basic-1 %}">Redis系列 - C#存取Redis (上)</a></li>
-  <li><a href="{% post_url 2018-05-13-Redis-Programming-CSharp-Basic-2 %}">Redis系列 - C#存取Redis (中)</a></li>
-</ul>
-
-</div><a href="/2018/05/20/Redis-Programming-CSharp-Basic-3.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
-          <a class="pill-button" href="/all.html?tag=Redis">Redis</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=C%23">C#</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=StackExchange.Redis">StackExchange.Redis</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=Trouble+Shooting">Trouble Shooting</a>
-        </li></ul><div class="other-wrapper"><div class="view-wrapper">
-        <span class="article-view" data-page-key="Redis-Programming-CSharp-Basic-3">0
-        </span> 閱讀
-      </div><div class="date-wrapper"><span class="article-meta">2018年 05月20日</span></div>
-  </div>
-</div>
-</article><article><h1><a href="/2018/05/13/Redis-Programming-CSharp-Basic-2.html">Redis系列 - C#存取Redis (中)</a></h1>
-          <div class="m-article-content"><h1 id="c存取redis">C#存取Redis</h1>
-
-<p>延續上一篇<a href="{% post_url 2018-05-11-Redis-Programming-CSharp-Basic-1 %}">Redis系列 - C#存取Redis (上)</a>，這篇文章會說明Redis的簡易Publish/Subscribe、Lua script的基礎知識。</p>
-
-<h2 id="publishsubscribe">PUBLISH/SUBSCRIBE</h2>
-
-<p>Redis的PUB/SUB是很簡易的訊息機制，並不像一些專門的Message Middleware(例如RabbitMQ、ActiveMQ)提供很多豐富的功能，比如它就不保證訊息發送後一定不會遺失，但因為附帶的這個功能實在太方便了，實務上還是經常使用到。</p>
-
-</div><a href="/2018/05/13/Redis-Programming-CSharp-Basic-2.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
-          <a class="pill-button" href="/all.html?tag=Redis">Redis</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=C%23">C#</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=StackExchange.Redis">StackExchange.Redis</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=Pub%2FSub">Pub/Sub</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=Lua+Script">Lua Script</a>
-        </li></ul><div class="other-wrapper"><div class="view-wrapper">
-        <span class="article-view" data-page-key="Redis-Programming-CSharp-Basic-2">0
-        </span> 閱讀
-      </div><div class="date-wrapper"><span class="article-meta">2018年 05月13日</span></div>
-  </div>
-</div>
-</article><article><h1><a href="/2018/05/11/Redis-Programming-CSharp-Basic-1.html">Redis系列 - C#存取Redis (上)</a></h1>
-          <div class="m-article-content"><h1 id="c存取redis">C#存取Redis</h1>
-
-<p>這篇算是Redis系列第二篇，內容會儘量涵蓋存取Redis需要注意的一些基本知識及除錯</p>
-
-<h2 id="redis的特性">Redis的特性</h2>
-
-<p>在Redis系列第一篇有提到Redis是一個效能極好且穩定性很高的In-Memory的NoSQL database，它有幾個特性是我們需要知道的：</p>
-
-<ul>
-  <li>以ANSI C開發，穩定</li>
-  <li>資料儲存在Memory中處理，減少了Disk I/O</li>
-  <li>Single Thread I/O Multiplex</li>
-  <li>提供AOF/RDB 2種持久化方式</li>
-</ul>
-
-</div><a href="/2018/05/11/Redis-Programming-CSharp-Basic-1.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
-          <a class="pill-button" href="/all.html?tag=Redis">Redis</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=C%23">C#</a>
-        </li><li>
-          <a class="pill-button" href="/all.html?tag=StackExchange.Redis">StackExchange.Redis</a>
-        </li></ul><div class="other-wrapper"><div class="view-wrapper">
-        <span class="article-view" data-page-key="Redis-Programming-CSharp-Basic-1">0
-        </span> 閱讀
-      </div><div class="date-wrapper"><span class="article-meta">2018年 05月11日</span></div>
-  </div>
-</div>
-</article></div><nav class="m-pagination"><p>共計 13 篇文章，2 頁。</p>
-          <ul><li><div class="round-button inactive">
-                <div class="icon icon--prrevious"><svg fill="#000000" width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
-  <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-</svg>
 </div></div>
-              </li><li>
-                  <div class="round-button cur"><span>1</span></div>
-                </li><li>
-                    <a class="round-button" href="/page2"><span>2</span></a>
-                  </li><li>
-                <a class="round-button" href="/page2">
-                  <div class="icon icon--next"><svg fill="#000000" width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
-  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-</svg>
-</div>
-                </a>
-              </li></ul>
-        </nav></div>
-</div>
-</div>
+				</footer>
+			</article>
+			<div class="article-previous-next clearfix"><div class="article-previous"><span>上篇</span><a href="/2018/10/06/Disruptor-Net-IEventTranslator.html">Disruptor.Net - IEventTranslator</a></div><div class="article-next"><span>下篇</span><a href="/2018/07/22/Website-Traffic-Shaping-Architecture.html">高流量網站系統架構設計 - 提高交易有效性</a></div></div></div>
+	</div>
+</div></div>
       </div>
     </div><div class="m-page-footer js-page-footer">
   <div class="main">
@@ -605,7 +438,277 @@
     };
     window.TEXT_VARIABLES = TEXT_VARIABLES;
   })();
-</script><script></script><script>
+</script><script>(function() {
+  var SOURCES = window.TEXT_VARIABLES.sources;
+  function scrollAnimateTo(destination, duration, callback) {
+    var $body = $('html, body'), bodyScrollTop = $body.scrollTop();
+    if(bodyScrollTop === destination) { return; }
+    $body.animate({ scrollTop: destination }, duration, callback);
+  }
+  window.scrollTopAnchor = function(anchor, callback) {
+    scrollAnimateTo($(anchor).offset().top, 400, function() {
+      window.history.replaceState(null, '', window.location.href.split('#')[0] + anchor);
+      callback && callback();
+    });
+  };
+  window.Lazyload.js(SOURCES.jquery, function() {
+    var $articleContent = $('.m-post, .m-page').find('.m-article-content'), $this;
+    $articleContent.children('.highlight').each(function() {
+      $this = $(this);
+      $this.attr('data-lang', $this.find('code').attr('data-lang'));
+    });
+
+    $articleContent.children('h1, h2, h3, h4, h5, h6').each(function() {
+      $this = $(this);
+      $this.append($('<a class="anchor" aria-hidden="true"></a>').html('<svg fill="#000000" width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg>'));
+    });
+    $articleContent.on('click', '.anchor', function() {
+      window.scrollTopAnchor('#' + $(this).parent().attr('id'));
+    });
+  });
+})();(function() {
+  var SOURCES = window.TEXT_VARIABLES.sources;
+  window.Lazyload.js(SOURCES.jquery, function() {
+    var $window = $(window), $document = $(window.document), $root;
+    var rootTop, rootLeft, rootHeight, scrollBottom, rootBottomTop, lastScrollTop;
+    var offsetBottom = 0, disabled = false, hasInit = false;
+
+    function setOptions(options) {
+      var _options = options || {};
+      _options.offsetBottom && (offsetBottom = _options.offsetBottom);
+      _options.disabled !== undefined && (disabled = _options.disabled);
+      calc(true);
+    }
+    function initData() {
+      top();
+      var rootOffset = $root.offset();
+      rootHeight = $root.outerHeight();
+      rootTop = rootOffset.top;
+      rootLeft = rootOffset.left;
+    }
+    function calc(needInitData) {
+      needInitData && initData();
+      scrollBottom = $document.outerHeight() - offsetBottom - rootHeight;
+      rootBottomTop = scrollBottom - rootTop;
+    }
+    function top() {
+      $root.removeClass('fixed').css({
+        left: 0,
+        top: 0
+      });
+    }
+    function fixed() {
+      $root.addClass('fixed').css({
+        left: rootLeft + 'px',
+        top: 0
+      });
+    }
+    function bottom() {
+      $root.removeClass('fixed').css({
+        left: 0,
+        top: rootBottomTop + 'px'
+      });
+    }
+    function setState(force) {
+      force !== true && (force = false);
+      var scrollTop = $window.scrollTop();
+      if (scrollTop >= rootTop && scrollTop <= scrollBottom) {
+        (!force && lastScrollTop >= rootTop && lastScrollTop <= scrollBottom) || fixed();
+      } else if (scrollTop < rootTop) {
+        (!force && lastScrollTop < rootTop) || top();
+      } else {
+        (!force && lastScrollTop > scrollBottom) || bottom();
+      }
+      lastScrollTop = scrollTop;
+    }
+    function init() {
+      if(!hasInit) {
+        var interval, timeout;
+        calc(true); setState();
+        // run calc every 1.5 seconds
+        interval = setInterval(function() {
+          calc();
+        }, 1500);
+        timeout = setTimeout(function() {
+          clearInterval(interval);
+        }, 50000);
+        window.pageLoad.then(function() {
+          clearInterval(interval);
+          clearTimeout(timeout);
+        });
+        $window.on('scroll', function() {
+          disabled || setState();
+        });
+        $window.on('resize', window.throttle(function() {
+          disabled || (calc(true), setState(true));
+        }, 100));
+        hasInit = true;
+      }
+    }
+
+    function affix(options) {
+      $root = this;
+      setOptions(options);
+      if (!disabled) {
+        init();
+      }
+      $window.on('resize', window.throttle(function() {
+        init();
+      }, 200));
+      return {
+        setOptions: setOptions
+      };
+    }
+    $.fn.affix = affix;
+  });
+})();(function() {
+  var SOURCES = window.TEXT_VARIABLES.sources;
+  window.Lazyload.js(SOURCES.jquery, function() {
+    var $window = $(window), $root, $tocUl = $('<ul></ul>'), $tocLi, $headings, $activeLast, $activeCur;
+    var selectors = 'h1,h2,h3', container = 'body', disabled = false;
+    var headingsPos, scrolling = false, rendered = false, hasInit = false;
+    function setOptions(options) {
+      var _options = options || {};
+      _options.selectors && (selectors = _options.selectors);
+      _options.container && (container = _options.container);
+      _options.disabled !== undefined && (disabled = _options.disabled);
+      $headings = $(container).find(selectors);
+      calc();
+    }
+    function calc() {
+      headingsPos = [];
+      $headings.each(function() {
+        headingsPos.push(Math.floor($(this).offset().top));
+      });
+    }
+    function setState(element, disabled) {
+      var scrollTop = $window.scrollTop(), i;
+      if (disabled || !headingsPos || headingsPos.length < 1) { return; }
+      if (element) {
+        $activeCur = element;
+      } else {
+        for (i = 0; i < headingsPos.length; i++) {
+          if (scrollTop >= headingsPos[i]) {
+            $activeCur = $tocLi.eq(i);
+          } else {
+            $activeCur || ($activeCur = $tocLi.eq(i));
+            break;
+          }
+        }
+      }
+      $activeLast && $activeLast.removeClass('toc-active');
+      ($activeLast = $activeCur).addClass('toc-active');
+    }
+    function render() {
+      if(!rendered) {
+        $root.append($tocUl);
+        $headings.each(function() {
+          var $this = $(this);
+          $tocUl.append($('<li></li>').addClass('toc-' + $this.prop('tagName').toLowerCase())
+            .append($('<a></a>').text($this.text()).attr('href', '#' + $this.prop('id'))));
+        });
+        $tocLi = $tocUl.children('li');
+        $tocUl.on('click', 'a', function(e) {
+          e.preventDefault();
+          var $this = $(this);
+          scrolling = true;
+          setState($this.parent());
+          window.scrollTopAnchor($this.attr('href'), function() {
+            scrolling = false;
+          });
+        });
+      }
+      rendered = true;
+    }
+    function init() {
+      var interval, timeout;
+      if(!hasInit) {
+        render(); calc(); setState(null, scrolling);
+        // run calc every 1.5 seconds
+        interval = setInterval(function() {
+          calc();
+        }, 1500);
+        timeout = setTimeout(function() {
+          clearInterval(interval);
+        }, 50000);
+        window.pageLoad.then(function() {
+          clearInterval(interval);
+          clearTimeout(timeout);
+        });
+        $window.on('scroll', function() {
+          disabled || setState(null, scrolling);
+        });
+        $window.on('resize', window.throttle(function() {
+          if (!disabled) {
+            render(); calc(); setState(null, scrolling);
+          }
+        }, 100));
+      }
+      hasInit = true;
+    }
+    function toc(options) {
+      $root = this;
+      setOptions(options);
+      if (!disabled) {
+        init();
+      }
+      $window.on('resize', window.throttle(function() {
+        init();
+      }, 200));
+      return {
+        setOptions: setOptions
+      };
+    }
+    toc.setOptions = setOptions;
+    $.fn.toc = toc;
+  });
+})();(function() {
+  var SOURCES = window.TEXT_VARIABLES.sources;
+  var TOC_SELECTOR = window.TEXT_VARIABLES.site.toc.selectors;
+  window.Lazyload.js(SOURCES.jquery, function() {
+    var $window = $(window);
+    var $pageStage = $('.js-page-stage');
+    var $pageFooter = $('.js-page-footer');
+    var $articleContent = $('.js-article-content');
+    var $articleAside = $('.js-article-aside');
+    var $toc = $('.js-toc');
+    var $col2 = $('.js-col-2');
+    var toc, affix;
+    var hasToc = $articleContent.find(TOC_SELECTOR).length > 0;
+    var tocDisabled = false;
+
+    function disabled() {
+      return $col2.css('display') === 'none' || !hasToc;
+    }
+
+    $window.on('resize', window.throttle(function() {
+      tocDisabled = disabled();
+      toc && toc.setOptions({
+        disabled: tocDisabled
+      });
+      affix && affix.setOptions({
+        disabled: tocDisabled
+      });
+    }, 100));
+
+    if (hasToc) {
+      !$pageStage.hasClass('has-toc') && $pageStage.addClass('has-toc');
+    }
+    tocDisabled = disabled();
+
+    setTimeout(function() {
+      toc = $toc.toc({
+        selectors: TOC_SELECTOR,
+        container: $articleContent,
+        disabled: tocDisabled
+      });
+      affix = $articleAside.affix({
+        offsetBottom: $pageFooter.outerHeight(),
+        disabled: tocDisabled
+      });
+    }, 1000);
+  });
+})();</script><script>
   window.Lazyload.js('https://cdn.bootcss.com/mermaid/7.1.2/mermaid.min.js', function() {
     mermaid.init(undefined, '.language-mermaid');
     mermaid.initialize({ startOnLoad: true });

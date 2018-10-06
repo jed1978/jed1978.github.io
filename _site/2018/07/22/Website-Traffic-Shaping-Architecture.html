@@ -1,9 +1,9 @@
 <!DOCTYPE html><html lang="zh-Hant">
   <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>學習CI系列 - 建立.Net build server - Jed's blog</title>
-<meta name="description" content="設定與建立 .Net build server前言在過去要建置.Net的Build Server環境，最簡單的方式就是直接安裝一套Visual Studio IDE在主機上這個方式雖然最簡單，但也有不少的缺點：  佔用多餘的磁碟空間  版權問題  安裝時間很長">
-<link rel="canonical" href="http://localhost:4000/2018/04/28/CI-setup-dotnet-build-server.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>高流量網站系統架構設計 - 提高交易有效性 - Jed's blog</title>
+<meta name="description" content="高流量網站系統架構設計網站最愛高流量，也最怕高流量，瞬間湧入的大量請求到底該怎麼處理才不會讓老闆跳腳?常見的網站架構大概長這樣graph LR     Browser--&gt;Website     Website--&gt;Service     Service--&gt;Database     Websi...">
+<link rel="canonical" href="http://localhost:4000/2018/07/22/Website-Traffic-Shaping-Architecture.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
 <!-- for Safari on iOS https://developer.apple.com/ios/human-interface-guidelines/icons-and-images/app-icon/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/images/logo/icon-180x180.png"><link rel="apple-touch-icon" sizes="167x167" href="/assets/images/logo/icon-167x167.png"><link rel="apple-touch-icon" sizes="152x152" href="/assets/images/logo/icon-152x152.png"><link rel="apple-touch-icon" sizes="120x120" href="/assets/images/logo/icon-120x120.png"><link rel="shortcut icon" href="/assets/images/logo/icon-120x120.png">
 <!-- for Chrome on Android https://developer.chrome.com/multidevice/android/installtohomescreen -->
 <meta name="mobile-web-app-capable" content="yes"><link rel="icon" sizes="192x192" href="/assets/images/logo/icon-192x192.png">
@@ -238,66 +238,68 @@
 		<div class="col-1">
 			<article class="js-article" itemscope itemtype="http://schema.org/BlogPosting">
 				<meta itemprop="mainEntityOfPage" itemscope itemType="https://schema.org/WebPage"/>
-				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">學習CI系列 - 建立.Net build server</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
-          <a class="pill-button" href="/all.html?tag=Continuous+Integration">Continuous Integration</a>
+				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">高流量網站系統架構設計 - 提高交易有效性</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=Architecture">Architecture</a>
         </li><li>
-          <a class="pill-button" href="/all.html?tag=Build">Build</a>
+          <a class="pill-button" href="/all.html?tag=%E6%9E%B6%E6%A7%8B%E8%A8%AD%E8%A8%88">架構設計</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Traffic+Shaping">Traffic Shaping</a>
         </li></ul><div class="other-wrapper"><div class="view-wrapper">
-        <span class="article-view" data-page-key="CI">0
+        <span class="article-view" data-page-key="Architecture">0
         </span> 閱讀
-      </div><div class="date-wrapper"><time class="article-meta" datetime="2018-04-28T10:05:16+08:00"
-          itemprop="datePublished">2018年 04月28日
+      </div><div class="date-wrapper"><time class="article-meta" datetime="2018-07-22T23:55:48+08:00"
+          itemprop="datePublished">2018年 07月22日
         </time></div>
   </div>
 </div>
 </header>
-				<div class="m-article-content js-article-content" itemprop="articleBody"><h1 id="設定與建立-net-build-server">設定與建立 .Net build server</h1>
+				<div class="m-article-content js-article-content" itemprop="articleBody"><h1 id="高流量網站系統架構設計">高流量網站系統架構設計</h1>
 
-<h2 id="前言">前言</h2>
+<p>網站最愛高流量，也最怕高流量，瞬間湧入的大量請求到底該怎麼處理才不會讓老闆跳腳?
+常見的網站架構大概長這樣</p>
 
-<p>在過去要建置.Net的Build Server環境，最簡單的方式就是直接安裝一套Visual Studio IDE在主機上</p>
+<pre><code class="language-mermaid">graph LR
+     Browser--&gt;Website
+     Website--&gt;Service
+     Service--&gt;Database
+     Website--&gt;Database
+</code></pre>
 
-<p>這個方式雖然最簡單，但也有不少的缺點：</p>
+<p>這篇就是來聊聊架構該怎麼設計。</p>
 
-<ul>
-  <li>佔用多餘的磁碟空間</li>
-  <li>版權問題</li>
-  <li>安裝時間很長</li>
-</ul>
+<h2 id="架構師應付高流量">架構師應付高流量</h2>
 
-<!--more-->
-
-<p>以上的缺點造成不容易Scale的問題，當要編譯與建置的系統愈來愈多，這個問題造成的浪費日愈嚴重，因此就有人研究出如何不安裝Visual Studio的IDE，但依然可以建置.Net的應用程式。</p>
-
-<p>以Visual Studio 2015為例，要能編譯與建置就必須做以下的事情</p>
-
-<p>只是步驟相當繁瑣，一不小心弄錯就會導致build package時一堆錯誤</p>
-
-<p>Visual Studio 2017出現後，微軟終於重視這個需求，推出了<code class="highlighter-rouge">Build Tools for Visual Studio 2017</code></p>
-
-<h2 id="準備環境">準備環境</h2>
+<p>架構師應付高流量的架構設計大致上要做到三類</p>
 
 <ul>
-  <li>Windows Server 2016</li>
-  <li></li>
+  <li>分流</li>
+  <li>快取</li>
+  <li>限流</li>
 </ul>
 
-<h2 id="安裝-build-tools-for-visual-studio-2017">安裝 Build Tools for Visual Studio 2017</h2>
+<p>這三種做法應對的狀況是不同的，在架構層級上會分別帶來不同的影響，但相同的原則都是儘量往前，愈往後面層級跑，成本就愈大。</p>
 
-<h2 id="安裝-nuget">安裝 NuGet</h2>
+<h2 id="分流">分流</h2>
 
-<p></p>
+<p>這裡的分流大致上可以分為</p>
+
+<ul>
+  <li>讀寫分流</li>
+  <li>業務分流</li>
+</ul>
+
+<p>在Browser這個層級，</p>
 </div>
-				<footer><meta itemprop="dateModified" content="2018-04-28T10:05:16+08:00"><div class="article-license"><div class="m-license"><div class="clearfix"><a class="octocat" href="https://github.com/jed1978/jed1978.github.io/tree/master/_drafts/CI-setup-dotnet-build-server.md">
+				<footer><meta itemprop="dateModified" content="2018-07-22T23:55:48+08:00"><div class="article-license"><div class="m-license"><div class="clearfix"><a class="octocat" href="https://github.com/jed1978/jed1978.github.io/tree/master/_drafts/Website-Traffic-Shaping-Architecture.md">
         <img alt="View on Github" src="/assets/images/octocat.jpg" />
-      </a><p><a href="https://github.com/jed1978/jed1978.github.io/tree/master/_drafts/CI-setup-dotnet-build-server.md">在 Github 上查閱此文。</a></p><p>本文遵守 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> 許可協議。</p><a class="license" rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
+      </a><p><a href="https://github.com/jed1978/jed1978.github.io/tree/master/_drafts/Website-Traffic-Shaping-Architecture.md">在 Github 上查閱此文。</a></p><p>本文遵守 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> 許可協議。</p><a class="license" rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">
       <img alt="Creative Commons License" src="/assets/images/license-cc4.png" />
     </a><p>歡迎轉載，轉載需註明出處，且禁止用於商業目的。</p>
   </div>
 </div></div>
 				</footer>
 			</article>
-			<div class="article-previous-next clearfix"><div class="article-next"><span>下篇</span><a href="/2018/04/27/GitLab-Upgrade-500-Error.html">Upgrade GitLab from 10.3.3 to 10.7.1</a></div></div></div>
+			<div class="article-previous-next clearfix"><div class="article-previous"><span>上篇</span><a href="/2018/10/05/Cake-Build.html">跨平台的自動化建置 - 使用Cake build</a></div><div class="article-next"><span>下篇</span><a href="/2018/06/09/Master-Slave-Architecture-Design-and-Implementation.html">HA架構設計與實作 - Active Standby</a></div></div></div>
 	</div>
 </div></div>
       </div>
@@ -644,5 +646,10 @@
       });
     }, 1000);
   });
-})();</script></body>
+})();</script><script>
+  window.Lazyload.js('https://cdn.bootcss.com/mermaid/7.1.2/mermaid.min.js', function() {
+    mermaid.init(undefined, '.language-mermaid');
+    mermaid.initialize({ startOnLoad: true });
+  });
+</script></body>
 </html>

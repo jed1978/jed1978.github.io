@@ -1,10 +1,10 @@
 <!DOCTYPE html><html lang="zh-Hant">
   <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>關於我 - Jed's blog</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>部落格 - Jed's blog</title>
 <meta name="description" content="寫程式是一件快樂的事，期許自己可以一輩子都能享受這種快樂
 ">
-<link rel="canonical" href="http://localhost:4000/about.html"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
+<link rel="canonical" href="http://localhost:4000/page2/"><link rel="alternate" type="application/rss+xml" title="Jed's blog" href="http://localhost:4000/feed.xml">
 <!-- for Safari on iOS https://developer.apple.com/ios/human-interface-guidelines/icons-and-images/app-icon/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/images/logo/icon-180x180.png"><link rel="apple-touch-icon" sizes="167x167" href="/assets/images/logo/icon-167x167.png"><link rel="apple-touch-icon" sizes="152x152" href="/assets/images/logo/icon-152x152.png"><link rel="apple-touch-icon" sizes="120x120" href="/assets/images/logo/icon-120x120.png"><link rel="shortcut icon" href="/assets/images/logo/icon-120x120.png">
 <!-- for Chrome on Android https://developer.chrome.com/multidevice/android/installtohomescreen -->
 <meta name="mobile-web-app-capable" content="yes"><link rel="icon" sizes="192x192" href="/assets/images/logo/icon-192x192.png">
@@ -231,35 +231,154 @@
     </nav>
   </div>
 </header>
-<div class="m-page-main"><div class="m-page">
-  <article class="main"><div class="main-header"><h1>關於我</h1></div>
-    <div class="m-article-content" itemprop="articleBody"><p>我是Jed</p>
+<div class="m-page-main"><div class="m-home">
+  <div class="main">
+    <div class="m-post-list"><article><h1><a href="/2018/05/06/How-To-Start-Architecture-Design.html">如何開始架構設計</a></h1>
+          <div class="m-article-content"><h1 id="需求決定架構">需求決定架構</h1>
 
-<p>喜歡寫程式、討論架構，擅長高流量線上即時交易系統開發與架構設計</p>
+<p>一開始就直接破題了，軟體架構不是看著國內外大神分享的架構簡報抄一遍就好，也不是完全靠經驗決定架構怎麼設計。</p>
 
-<p>喜歡團隊開發多於單人開發，認為合格的架構師不能把寫code的能力丟下</p>
+<p>所有的架構設計都是由需求決定，我指的需求不單單指需求規格書上的<code class="highlighter-rouge">功能性需求(Funtional Requirements)</code>，還包括了很容易被忽視的<code class="highlighter-rouge">非功能性需求(Non-Functional Requirements)</code>與<code class="highlighter-rouge">約束(Constraints)</code>。</p>
 
-<p>熟悉敏捷開發方法及工程實踐</p>
+</div><a href="/2018/05/06/How-To-Start-Architecture-Design.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=Architecture">Architecture</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=%E6%9E%B6%E6%A7%8B%E8%A8%AD%E8%A8%88">架構設計</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=%E9%9C%80%E6%B1%82">需求</a>
+        </li></ul><div class="other-wrapper"><div class="view-wrapper">
+        <span class="article-view" data-page-key="Architecture">0
+        </span> 閱讀
+      </div><div class="date-wrapper"><span class="article-meta">2018年 05月06日</span></div>
+  </div>
+</div>
+</article><article><h1><a href="/2018/05/03/CI-setup-dotnet-build-server.html">學習CI系列 - 建立.Net build server</a></h1>
+          <div class="m-article-content"><h1 id="設定與建立-net-build-server">設定與建立 .Net build server</h1>
 
-<h2 id="認證">認證</h2>
+<h2 id="前言">前言</h2>
 
-<p><img src="/assets/images/seal-csm.png" alt="CSM" width="100px" />
-<img src="/assets/images/seal-csd.png" alt="CSD" width="100px" /></p>
+<p>在過去要建置.Net的Build Server環境，最簡單的方式就是直接安裝一套Visual Studio IDE在主機上</p>
 
-<h2 id="skills">Skills</h2>
+<p>這個方式雖然最簡單，但也有不少的缺點：</p>
 
 <ul>
-  <li>C#, Java Script</li>
-  <li>ASP.Net Web MVC, ASP.Net Web API</li>
-  <li>.Net Framework, .Net Core</li>
-  <li>Oracle, MS SQL, REDIS</li>
-  <li>Git, SVN</li>
-  <li>Docker</li>
-  <li>SCRUM, KANBAN</li>
-  <li>TDD, Unit Testing</li>
-  <li>Event-Driven Architecture, Domain-Driven Design, CQRS, In-memory Transaction Architecture</li>
+  <li>佔用多餘的磁碟空間</li>
+  <li>版權問題</li>
+  <li>安裝時間很長</li>
 </ul>
-</div></article>
+
+</div><a href="/2018/05/03/CI-setup-dotnet-build-server.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=Continuous+Integration">Continuous Integration</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Build">Build</a>
+        </li></ul><div class="other-wrapper"><div class="view-wrapper">
+        <span class="article-view" data-page-key="CI">0
+        </span> 閱讀
+      </div><div class="date-wrapper"><span class="article-meta">2018年 05月03日</span></div>
+  </div>
+</div>
+</article><article><h1><a href="/2018/05/02/Redis-Environment-Installation-Configuration.html">Redis系列 - 環境建置篇</a></h1>
+          <div class="m-article-content"><h1 id="redis系列---環境建置篇">Redis系列 - 環境建置篇</h1>
+
+<p>這篇會是Redis系列文的第一篇，著重在建立環境的基本知識。</p>
+
+<h2 id="基本介紹">基本介紹</h2>
+
+<p>以官方的解釋，Redis是一套Open source的In-memory NoSQL database，可以應用在Cache、Database及簡單的Message broker。</p>
+
+<p>作者則說它是一個<code class="highlighter-rouge">Data Structures Server</code>，顧名思義，它提供了很多種資料結構及相對應的指令去操作這些資料。由於它是以In-Memory的方式為主，另一個很明顯的特性就是它很快，非常快，正確使用下可以輕鬆的處理每秒上萬的請求。</p>
+
+<p>由於它具備極高的效能與可靠性，在很多系統中都會看到它的身影，對Backend/Fullstack engineer來說，這已經是必備的技能之一。</p>
+
+</div><a href="/2018/05/02/Redis-Environment-Installation-Configuration.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=Redis">Redis</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Docker">Docker</a>
+        </li></ul><div class="other-wrapper"><div class="view-wrapper">
+        <span class="article-view" data-page-key="Redis">0
+        </span> 閱讀
+      </div><div class="date-wrapper"><span class="article-meta">2018年 05月02日</span></div>
+  </div>
+</div>
+</article><article><h1><a href="/2018/04/29/ASP-Net-Core-Redis-Cache.html">ASP.Net Core - DistributedRedisCache</a></h1>
+          <div class="m-article-content"><h1 id="aspnet-core---distributedrediscache">ASP.Net Core - DistributedRedisCache</h1>
+
+<h2 id="前言">前言</h2>
+
+<p>在開發Web Application時，Redis是很常見的分散式快取服務，因此Microsoft也為了ASP.NET Core準備了Extension套件，只要在一開始的Startup.ConfigureService注入DistributedRedisCache(細節可以參考我強者同事John Wu的<a href="https://blog.johnwu.cc/article/ironman-day20-asp-net-core-caching-redis-session.html" target="_blank">鐵人賽文章</a>)。</p>
+
+</div><a href="/2018/04/29/ASP-Net-Core-Redis-Cache.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=ASP.Net+Core">ASP.Net Core</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=DistributedRedisCache">DistributedRedisCache</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Redis">Redis</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Cache">Cache</a>
+        </li></ul><div class="other-wrapper"><div class="view-wrapper">
+        <span class="article-view" data-page-key="NetCore">0
+        </span> 閱讀
+      </div><div class="date-wrapper"><span class="article-meta">2018年 04月29日</span></div>
+  </div>
+</div>
+</article><article><h1><a href="/2018/04/27/GitLab-Upgrade-500-Error.html">Upgrade GitLab from 10.3.3 to 10.7.1</a></h1>
+          <div class="m-article-content"><h1 id="gitlab-1033-ee-更新-1071-ee的問題">Gitlab 10.3.3 EE 更新 10.7.1 EE的問題</h1>
+
+<h2 id="升版失敗">升版失敗</h2>
+
+<p>某同事在某一天星期五上午，提早到了公司，依原先的計畫要<del>宰殺</del>升級全部團隊共用的Gitlab Server到最新的10.7.1。</p>
+
+<p>他依照原本設計的SOP進行升級後，如沒有意外的話，這篇文章也就不會出現了…</p>
+
+</div><a href="/2018/04/27/GitLab-Upgrade-500-Error.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=GitLab">GitLab</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Upgrade">Upgrade</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Docker">Docker</a>
+        </li></ul><div class="other-wrapper"><div class="view-wrapper">
+        <span class="article-view" data-page-key="GitLab">0
+        </span> 閱讀
+      </div><div class="date-wrapper"><span class="article-meta">2018年 04月27日</span></div>
+  </div>
+</div>
+</article><article><h1><a href="/2018/01/20/Agile-Scrum-Ceremonies-DailyScrum.html">學習敏捷系列 - Daily Scrum</a></h1>
+          <div class="m-article-content"><p>我參與過很多次的傳統瀑布流專案進度匯報會議，不帶杯咖啡進去真的很容易睡著，還好現在有了智慧型手機可以刷FB…(大誤)。</p>
+
+<p>以我的理解，專案進度匯報會議是比較偏單向的，資訊從一方流向另一方：讓團隊或PM(或PM的老闆)得到最新訊息，接下來PM(或PM的老闆…XD)可能會依專案的狀態進行一些工作項目跟資源上的調度，目的是控制好專案進度，以免造成延遲。</p>
+
+<p>但Daily Scrum的本質不太一樣，我傾向這樣描述它：</p>
+
+</div><a href="/2018/01/20/Agile-Scrum-Ceremonies-DailyScrum.html">「點我閱讀更多」</a><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+          <a class="pill-button" href="/all.html?tag=Agile">Agile</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Scrum">Scrum</a>
+        </li><li>
+          <a class="pill-button" href="/all.html?tag=Daily+Scrum">Daily Scrum</a>
+        </li></ul><div class="other-wrapper"><div class="view-wrapper">
+        <span class="article-view" data-page-key="Agile">0
+        </span> 閱讀
+      </div><div class="date-wrapper"><span class="article-meta">2018年 01月20日</span></div>
+  </div>
+</div>
+</article></div><nav class="m-pagination"><p>共計 13 篇文章，2 頁。</p>
+          <ul><li><a class="round-button" href="/">
+                <div class="icon icon--previous"><svg fill="#000000" width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+</svg>
+</div></a>
+              </li><li>
+                  <a class="round-button" href="/"><span>1</span></a>
+                </li><li>
+                  <div class="round-button cur"><span>2</span></div>
+                </li><li><div class="round-button inactive">
+                  <div class="icon icon--next"><svg fill="#000000" width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+</svg>
+</div>
+                  </div>
+                </li></ul>
+        </nav></div>
 </div>
 </div>
       </div>
@@ -336,35 +455,7 @@
     };
     window.TEXT_VARIABLES = TEXT_VARIABLES;
   })();
-</script><script>(function() {
-  var SOURCES = window.TEXT_VARIABLES.sources;
-  function scrollAnimateTo(destination, duration, callback) {
-    var $body = $('html, body'), bodyScrollTop = $body.scrollTop();
-    if(bodyScrollTop === destination) { return; }
-    $body.animate({ scrollTop: destination }, duration, callback);
-  }
-  window.scrollTopAnchor = function(anchor, callback) {
-    scrollAnimateTo($(anchor).offset().top, 400, function() {
-      window.history.replaceState(null, '', window.location.href.split('#')[0] + anchor);
-      callback && callback();
-    });
-  };
-  window.Lazyload.js(SOURCES.jquery, function() {
-    var $articleContent = $('.m-post, .m-page').find('.m-article-content'), $this;
-    $articleContent.children('.highlight').each(function() {
-      $this = $(this);
-      $this.attr('data-lang', $this.find('code').attr('data-lang'));
-    });
-
-    $articleContent.children('h1, h2, h3, h4, h5, h6').each(function() {
-      $this = $(this);
-      $this.append($('<a class="anchor" aria-hidden="true"></a>').html('<svg fill="#000000" width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg>'));
-    });
-    $articleContent.on('click', '.anchor', function() {
-      window.scrollTopAnchor('#' + $(this).parent().attr('id'));
-    });
-  });
-})();</script><script>
+</script><script></script><script>
   window.Lazyload.js('https://cdn.bootcss.com/mermaid/7.1.2/mermaid.min.js', function() {
     mermaid.init(undefined, '.language-mermaid');
     mermaid.initialize({ startOnLoad: true });

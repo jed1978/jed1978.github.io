@@ -238,7 +238,7 @@
 		<div class="col-1">
 			<article class="js-article" itemscope itemtype="http://schema.org/BlogPosting">
 				<meta itemprop="mainEntityOfPage" itemscope itemType="https://schema.org/WebPage"/>
-				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">學習敏捷系列 - Daily Scrum</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
+				<header class="main-header"><h1 itemprop="headline" itemprop="name headline">學習敏捷系列 - Daily Scrum</h1><div class="m-article-info clearfix"><meta itemprop="author" itemscope itemtype="https://schema.org/Blog"><meta itemprop="name" content="Jed Lin"/></meta><ul class="tag-wrapper"><li>
           <a class="pill-button" href="/all.html?tag=Agile">Agile</a>
         </li><li>
           <a class="pill-button" href="/all.html?tag=Scrum">Scrum</a>
@@ -648,5 +648,10 @@
       });
     }, 1000);
   });
-})();</script></body>
+})();</script><script>
+  window.Lazyload.js('https://cdn.bootcss.com/mermaid/7.1.2/mermaid.min.js', function() {
+    mermaid.init(undefined, '.language-mermaid');
+    mermaid.initialize({ startOnLoad: true });
+  });
+</script></body>
 </html>
