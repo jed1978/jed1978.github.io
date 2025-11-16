@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/kitian616#readme",
   "devDependencies": {
-    "eslint": "^4.19.1",
+    "eslint": "^9.39.1",
     "gulp": "^4.0.0",
     "gulp-rename": "^1.2.2",
     "gulp-svg2png": "^2.0.2",
